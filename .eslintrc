@@ -1,0 +1,15 @@
+{
+  "extends": [
+    "airbnb-base",
+    "plugin:@typescript-eslint/recommended",
+    "plugin:import/typescript"
+  ],
+  "parser": "@typescript-eslint/parser",
+  "rules": {
+    "max-len": [2, { "code":  120}]
+  },
+  "env": {
+    "jest": true,
+    "node": true
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "collectCoverage": true,
+  "collectCoverageFrom": [
+    "**/*.ts",
+    "!**/node_modules/**",
+    "!**/coverage/**",
+    "!**/build/**",
+    "!**/test/**",
+    "!**/types/**"
+  ],
+  "transform": {
+    "^.+\\.(t|j)sx?$": "ts-jest"
+  },
+  "coverageThreshold": {
+    "global": {
+      "branches": 80,
+      "functions": 60
+    }
+  },
+  "testMatch": ["**/test/**/*.test.ts"],
+  "testEnvironment": "node"
+}

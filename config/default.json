@@ -1,0 +1,7 @@
+{
+  "server": {
+    "port": 3001,
+    "requestTimeoutInMillis": 30000,
+    "requestRetriesAllowed": 1
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "server": {
+    "port": "PORT",
+    "requestTimeoutInMillis": "REQUEST_TIMEOUT_IN_MILLIS",
+    "requestRetriesAllowed": "REQUEST_RETRIES_ALLOWED"
+  }
+}

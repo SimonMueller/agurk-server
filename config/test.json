@@ -1,0 +1,6 @@
+{
+  "server": {
+    "requestTimeoutInMillis": 250,
+    "requestRetriesAllowed": 0
+  }
+}

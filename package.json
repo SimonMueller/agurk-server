@@ -1,0 +1,52 @@
+{
+  "name": "agurk-server",
+  "version": "0.1.0",
+  "private": true,
+  "description": "WebSocket server to play the danish card game 'agurk'",
+  "scripts": {
+    "start": "node dist/app.js",
+    "clean": "rimraf dist",
+    "test": "jest --config=.jest.json --silent",
+    "watch": "ts-node app.ts",
+    "build": "npm run clean && tsc",
+    "lint": "eslint app.ts server/**/*.ts shared/**/*.ts test/**/*.ts",
+    "lint:fix": "eslint --fix app.ts server/**/*.ts shared/**/*.ts test/**/*.ts"
+  },
+  "author": "Simon Müller",
+  "license": "MIT",
+  "engines": {
+    "node": "~12.9.0",
+    "npm": "~6.10.0"
+  },
+  "devDependencies": {
+    "@types/config": "0.0.34",
+    "@types/hapi__joi": "^15.0.3",
+    "@types/jest": "^24.0.17",
+    "@types/lodash.sample": "^4.2.6",
+    "@types/lodash.shuffle": "^4.2.6",
+    "@types/ramda": "^0.26.21",
+    "@types/rosie": "0.0.36",
+    "@types/uuid": "^3.4.5",
+    "@types/ws": "^6.0.2",
+    "@typescript-eslint/eslint-plugin": "^2.0.0",
+    "@typescript-eslint/parser": "^2.0.0",
+    "eslint": "^5.15.1",
+    "eslint-config-airbnb-base": "^13.1.0",
+    "eslint-plugin-import": "^2.16.0",
+    "jest": "^24.8.0",
+    "rosie": "^2.0.1",
+    "ts-jest": "^24.0.2",
+    "ts-node": "^8.3.0",
+    "typescript": "^3.5.3"
+  },
+  "dependencies": {
+    "@hapi/joi": "~15.1.0",
+    "config": "~3.1.0",
+    "lodash.sample": "~4.2.1",
+    "lodash.shuffle": "~4.2.0",
+    "ramda": "^0.26.1",
+    "rimraf": "^3.0.0",
+    "uuid": "~3.3.2",
+    "ws": "~7.0.1"
+  }
+}
