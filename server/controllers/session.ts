@@ -14,16 +14,16 @@ import { generateId } from '../util';
 let room: WebSocket[] = [];
 
 function createPlayerApi(socket: WebSocket): PlayerApi {
-  return ({
+  return {
     isConnected: (): boolean => socket.readyState === WebSocket.OPEN,
     dealCards: partial(playerCommunication.dealCards, [socket]),
     requestCards: partial(playerCommunication.requestCards, [socket]),
     sendError: partial(playerCommunication.sendError, [socket]),
-  });
+  };
 }
 
 function createRoomApi(sockets: WebSocket[]): RoomApi {
-  return ({
+  return {
     broadcastStartGame: partial(roomCommunication.broadcastStartGame, [sockets]),
     broadcastStartRound: partial(roomCommunication.broadcastStartRound, [sockets]),
     broadcastStartCycle: partial(roomCommunication.broadcastStartCycle, [sockets]),
@@ -40,14 +40,14 @@ function createRoomApi(sockets: WebSocket[]): RoomApi {
     broadcastEndGame: partial(roomCommunication.broadcastEndGame, [sockets]),
     broadcastGameError: partial(roomCommunication.broadcastGameError, [sockets]),
     broadcastPlayerTurnError: partial(roomCommunication.broadcastPlayerTurnError, [sockets]),
-  });
+  };
 }
 
 function createDealerApi(): DealerApi {
-  return ({
+  return {
     createHandsForPlayerIds,
     samplePlayerId,
-  });
+  };
 }
 
 export default async function (socket: WebSocket): Promise<void> {

@@ -21,20 +21,20 @@ async function requestCards(player: Player): Promise<Result<Error, Card[]>> {
 }
 
 function buildPlayerTurnError(playerId: PlayerId, message: string): TurnResult {
-  return ({
+  return {
     kind: ERROR_RESULT_KIND,
     error: {
       playerId,
       message,
     },
-  });
+  };
 }
 
 function buildPlayerTurnSuccess(validatedTurn: ValidatedTurn): TurnResult {
-  return ({
+  return {
     kind: SUCCESS_RESULT_KIND,
     data: validatedTurn,
-  });
+  };
 }
 
 function validatePlayedCardsInTurn(
@@ -50,9 +50,9 @@ function validatePlayedCardsInTurn(
 }
 
 function broadcastTurnResult(turnResult: TurnResult, roomApi: RoomApi): void {
-  return (turnResult.kind === ERROR_RESULT_KIND
+  return turnResult.kind === ERROR_RESULT_KIND
     ? roomApi.broadcastPlayerTurnError(turnResult.error)
-    : roomApi.broadcastPlayerTurn(turnResult.data));
+    : roomApi.broadcastPlayerTurn(turnResult.data);
 }
 
 export default async function (

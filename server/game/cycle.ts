@@ -104,7 +104,7 @@ async function playTurnWithRetry(
 }
 
 function addErrorTurnPlayerIdToOutPlayers(previousCycleState: CycleState, errorTurn: TurnError): CycleState {
-  return ({
+  return {
     ...previousCycleState,
     outPlayers: [
       ...previousCycleState.outPlayers,
@@ -113,17 +113,17 @@ function addErrorTurnPlayerIdToOutPlayers(previousCycleState: CycleState, errorT
         reason: errorTurn.message,
       },
     ],
-  });
+  };
 }
 
 function addValidTurnToCycleTurns(previousCycleState: CycleState, turn: ValidatedTurn): CycleState {
-  return ({
+  return {
     ...previousCycleState,
     turns: [
       ...previousCycleState.turns,
       turn,
     ],
-  });
+  };
 }
 
 function buildNewCycleState(turnResult: TurnResult, previousCycleState: CycleState): CycleState {
