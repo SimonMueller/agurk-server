@@ -20,7 +20,7 @@ export const enum Color {
   WHITE = 'WHITE',
 }
 
-export const equals = (card1: Card, card2: Card): boolean => {
+export function equals(card1: Card, card2: Card): boolean {
   const rankEquals = card1.rank === card2.rank;
 
   if (card1.kind === CardKind.Suit && card2.kind === CardKind.Suit) {
@@ -32,7 +32,7 @@ export const equals = (card1: Card, card2: Card): boolean => {
   }
 
   return false;
-};
+}
 
 export const compareRanks = (card1: Card, card2: Card): number => Math.sign(card1.rank - card2.rank);
 

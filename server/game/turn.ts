@@ -10,9 +10,7 @@ import { PlayerId } from '../../shared/types/player';
 import { ValidatedTurn } from '../../shared/types/turn';
 import { ERROR_RESULT_KIND, SUCCESS_RESULT_KIND } from './common';
 
-const requestCards = async (
-  player: Player,
-): Promise<Result<Error, Card[]>> => {
+async function requestCards(player: Player): Promise<Result<Error, Card[]>> {
   try {
     const cards = await player.api.requestCards();
     return { kind: SUCCESS_RESULT_KIND, data: cards };
@@ -20,42 +18,48 @@ const requestCards = async (
     logger.error(error);
     return { kind: ERROR_RESULT_KIND, error };
   }
-};
+}
 
-const buildPlayerTurnError = (playerId: PlayerId, message: string): TurnResult => ({
-  kind: ERROR_RESULT_KIND,
-  error: {
-    playerId,
-    message,
-  },
-});
+function buildPlayerTurnError(playerId: PlayerId, message: string): TurnResult {
+  return ({
+    kind: ERROR_RESULT_KIND,
+    error: {
+      playerId,
+      message,
+    },
+  });
+}
 
-const buildPlayerTurnSuccess = (validatedTurn: ValidatedTurn): TurnResult => ({
-  kind: SUCCESS_RESULT_KIND,
-  data: validatedTurn,
-});
+function buildPlayerTurnSuccess(validatedTurn: ValidatedTurn): TurnResult {
+  return ({
+    kind: SUCCESS_RESULT_KIND,
+    data: validatedTurn,
+  });
+}
 
-const validatePlayedCardsInTurn = (
+function validatePlayedCardsInTurn(
   playedCards: Card[],
   playerId: PlayerId,
   cycleState: CycleState,
-): TurnResult => {
+): TurnResult {
   const turn = { cards: playedCards, playerId };
   const validatedTurn = validateTurn(turn, cycleState);
   return validatedTurn.valid
     ? buildPlayerTurnSuccess(validatedTurn)
     : buildPlayerTurnError(playerId, 'player is not following the game rules');
-};
+}
 
-const broadcastTurnResult = (turnResult: TurnResult, roomApi: RoomApi): void => (turnResult.kind === ERROR_RESULT_KIND
-  ? roomApi.broadcastPlayerTurnError(turnResult.error)
-  : roomApi.broadcastPlayerTurn(turnResult.data));
+function broadcastTurnResult(turnResult: TurnResult, roomApi: RoomApi): void {
+  return (turnResult.kind === ERROR_RESULT_KIND
+    ? roomApi.broadcastPlayerTurnError(turnResult.error)
+    : roomApi.broadcastPlayerTurn(turnResult.data));
+}
 
-export default async (
+export default async function (
   player: Player,
   cycleState: CycleState,
   roomApi: RoomApi,
-): Promise<TurnResult> => {
+): Promise<TurnResult> {
   const { id: playerId } = player;
 
   roomApi.broadcastStartPlayerTurn(playerId);
@@ -69,4 +73,4 @@ export default async (
   broadcastTurnResult(turnResult, roomApi);
 
   return turnResult;
-};
+}

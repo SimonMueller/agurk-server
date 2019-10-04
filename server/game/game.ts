@@ -18,16 +18,14 @@ import {
   rotatePlayersToPlayerId,
 } from './common';
 
-const findPlayersWithExceededPenaltySumThreshold = (
-  penalties: Penalty[],
-): PlayerId[] => {
+function findPlayersWithExceededPenaltySumThreshold(penalties: Penalty[]): PlayerId[] {
   const penaltiesByPlayerId = groupBy(penalty => penalty.playerId, penalties);
   return Object.keys(penaltiesByPlayerId).filter((playerId) => {
     const playerPenalties = penaltiesByPlayerId[playerId];
     const playerPenaltyCards = playerPenalties.map(penalty => penalty.card);
     return isPenaltySumThresholdExceeded(playerPenaltyCards);
   });
-};
+}
 
 const getNewGameState = async (
   players: Player[],
@@ -55,12 +53,12 @@ const getNewGameState = async (
   };
 };
 
-const iterate = async (
+async function iterate(
   players: Player[],
   gameState: GameState,
   roomApi: RoomApi,
   dealerApi: DealerApi,
-): Promise<GameState> => {
+): Promise<GameState> {
   const startingPlayerId = chooseRoundStartingPlayerId(gameState);
   const orderedPlayers = rotatePlayersToPlayerId(players, startingPlayerId);
   const orderedActivePlayers = findActivePlayers(gameState.playerIds, gameState.outPlayers, orderedPlayers);
@@ -84,25 +82,29 @@ const iterate = async (
   return isGameFinished(currentGameState)
     ? currentGameState
     : iterate(orderedActivePlayers, currentGameState, roomApi, dealerApi);
-};
+}
 
-const createValidGameResult = (finishedGameState: GameState, winner: PlayerId): GameResult => ({
-  kind: SUCCESS_RESULT_KIND,
-  data: {
-    ...finishedGameState,
-    winner,
-  },
-});
+function createValidGameResult(finishedGameState: GameState, winner: PlayerId): GameResult {
+  return ({
+    kind: SUCCESS_RESULT_KIND,
+    data: {
+      ...finishedGameState,
+      winner,
+    },
+  });
+}
 
-const createNoWinnerErrorGameResult = (gameState: GameState): GameResult => ({
-  kind: ERROR_RESULT_KIND,
-  error: {
-    gameState,
-    message: 'no winner could be determined. game will not be counted.',
-  },
-});
+function createNoWinnerErrorGameResult(gameState: GameState): GameResult {
+  return ({
+    kind: ERROR_RESULT_KIND,
+    error: {
+      gameState,
+      message: 'no winner could be determined. game will not be counted.',
+    },
+  });
+}
 
-const createInvalidPlayerCountErrorGameResult = (players: Player[]): GameResult => {
+function createInvalidPlayerCountErrorGameResult(players: Player[]): GameResult {
   const playerIds = mapPlayersToPlayerIds(players);
   return {
     kind: ERROR_RESULT_KIND,
@@ -115,25 +117,22 @@ const createInvalidPlayerCountErrorGameResult = (players: Player[]): GameResult 
       message: 'player count not in valid range of [2, 7]',
     },
   };
-};
+}
 
-const broadcastGameResult = (
-  winner: PlayerId | undefined,
-  roomApi: RoomApi,
-): void => {
+function broadcastGameResult(winner: PlayerId | undefined, roomApi: RoomApi): void {
   roomApi.broadcastEndGame();
   return winner !== undefined
     ? roomApi.broadcastGameWinner(winner)
     : roomApi.broadcastGameError({ error: 'no active players left.' });
-};
+}
 
-const broadcastStartGame = (roomApi: RoomApi, playerIds: PlayerId[]): void => {
+function broadcastStartGame(roomApi: RoomApi, playerIds: PlayerId[]): void {
   roomApi.broadcastStartGame();
   roomApi.broadcastPlayers(playerIds);
   roomApi.broadcastPlayerOrder(playerIds);
-};
+}
 
-const playGame = async (roomApi: RoomApi, players: Player[], dealerApi: DealerApi): Promise<GameResult> => {
+async function playGame(roomApi: RoomApi, players: Player[], dealerApi: DealerApi): Promise<GameResult> {
   const playerIds = mapPlayersToPlayerIds(players);
   const initialGameState = { playerIds, rounds: [], outPlayers: [] };
 
@@ -147,12 +146,14 @@ const playGame = async (roomApi: RoomApi, players: Player[], dealerApi: DealerAp
   return winner !== undefined
     ? createValidGameResult(finishedGameState, winner)
     : createNoWinnerErrorGameResult(finishedGameState);
-};
+}
 
-export default async (
+export default async function (
   players: Player[],
   roomApi: RoomApi,
   dealerApi: DealerApi,
-): Promise<GameResult> => (isValidPlayerCount(players.length)
-  ? playGame(roomApi, players, dealerApi)
-  : createInvalidPlayerCountErrorGameResult(players));
+): Promise<GameResult> {
+  return (isValidPlayerCount(players.length)
+    ? playGame(roomApi, players, dealerApi)
+    : createInvalidPlayerCountErrorGameResult(players));
+}

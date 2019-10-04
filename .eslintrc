@@ -6,7 +6,8 @@
   ],
   "parser": "@typescript-eslint/parser",
   "rules": {
-    "max-len": [2, { "code":  120}]
+    "max-len": [2, { "code":  120}],
+    "func-style": [2, "declaration", { "allowArrowFunctions": true }]
   },
   "env": {
     "jest": true,

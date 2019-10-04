@@ -13,38 +13,44 @@ import { generateId } from '../util';
 // TODO: proper room and session handling
 let room: WebSocket[] = [];
 
-const createPlayerApi = (socket: WebSocket): PlayerApi => ({
-  isConnected: (): boolean => socket.readyState === WebSocket.OPEN,
-  dealCards: partial(playerCommunication.dealCards, [socket]),
-  requestCards: partial(playerCommunication.requestCards, [socket]),
-  sendError: partial(playerCommunication.sendError, [socket]),
-});
+function createPlayerApi(socket: WebSocket): PlayerApi {
+  return ({
+    isConnected: (): boolean => socket.readyState === WebSocket.OPEN,
+    dealCards: partial(playerCommunication.dealCards, [socket]),
+    requestCards: partial(playerCommunication.requestCards, [socket]),
+    sendError: partial(playerCommunication.sendError, [socket]),
+  });
+}
 
-const createRoomApi = (sockets: WebSocket[]): RoomApi => ({
-  broadcastStartGame: partial(roomCommunication.broadcastStartGame, [sockets]),
-  broadcastStartRound: partial(roomCommunication.broadcastStartRound, [sockets]),
-  broadcastStartCycle: partial(roomCommunication.broadcastStartCycle, [sockets]),
-  broadcastStartPlayerTurn: partial(roomCommunication.broadcastStartPlayerTurn, [sockets]),
-  broadcastPlayerTurn: partial(roomCommunication.broadcastPlayerTurn, [sockets]),
-  broadcastEndCycle: partial(roomCommunication.broadcastEndCycle, [sockets]),
-  broadcastEndRound: partial(roomCommunication.broadcastEndRound, [sockets]),
-  broadcastPlayers: partial(roomCommunication.broadcastPlayers, [sockets]),
-  broadcastGameWinner: partial(roomCommunication.broadcastGameWinner, [sockets]),
-  broadcastPlayerOrder: partial(roomCommunication.broadcastPlayerOrder, [sockets]),
-  broadcastRoundWinner: partial(roomCommunication.broadcastRoundWinner, [sockets]),
-  broadcastPenalties: partial(roomCommunication.broadcastPenalties, [sockets]),
-  broadcastOutPlayers: partial(roomCommunication.broadcastOutPlayers, [sockets]),
-  broadcastEndGame: partial(roomCommunication.broadcastEndGame, [sockets]),
-  broadcastGameError: partial(roomCommunication.broadcastGameError, [sockets]),
-  broadcastPlayerTurnError: partial(roomCommunication.broadcastPlayerTurnError, [sockets]),
-});
+function createRoomApi(sockets: WebSocket[]): RoomApi {
+  return ({
+    broadcastStartGame: partial(roomCommunication.broadcastStartGame, [sockets]),
+    broadcastStartRound: partial(roomCommunication.broadcastStartRound, [sockets]),
+    broadcastStartCycle: partial(roomCommunication.broadcastStartCycle, [sockets]),
+    broadcastStartPlayerTurn: partial(roomCommunication.broadcastStartPlayerTurn, [sockets]),
+    broadcastPlayerTurn: partial(roomCommunication.broadcastPlayerTurn, [sockets]),
+    broadcastEndCycle: partial(roomCommunication.broadcastEndCycle, [sockets]),
+    broadcastEndRound: partial(roomCommunication.broadcastEndRound, [sockets]),
+    broadcastPlayers: partial(roomCommunication.broadcastPlayers, [sockets]),
+    broadcastGameWinner: partial(roomCommunication.broadcastGameWinner, [sockets]),
+    broadcastPlayerOrder: partial(roomCommunication.broadcastPlayerOrder, [sockets]),
+    broadcastRoundWinner: partial(roomCommunication.broadcastRoundWinner, [sockets]),
+    broadcastPenalties: partial(roomCommunication.broadcastPenalties, [sockets]),
+    broadcastOutPlayers: partial(roomCommunication.broadcastOutPlayers, [sockets]),
+    broadcastEndGame: partial(roomCommunication.broadcastEndGame, [sockets]),
+    broadcastGameError: partial(roomCommunication.broadcastGameError, [sockets]),
+    broadcastPlayerTurnError: partial(roomCommunication.broadcastPlayerTurnError, [sockets]),
+  });
+}
 
-const createDealerApi = (): DealerApi => ({
-  createHandsForPlayerIds,
-  samplePlayerId,
-});
+function createDealerApi(): DealerApi {
+  return ({
+    createHandsForPlayerIds,
+    samplePlayerId,
+  });
+}
 
-export default async (socket: WebSocket): Promise<void> => {
+export default async function (socket: WebSocket): Promise<void> {
   logger.info('client connected');
 
   room.push(socket);
@@ -70,4 +76,4 @@ export default async (socket: WebSocket): Promise<void> => {
 
     room = [];
   }
-};
+}
