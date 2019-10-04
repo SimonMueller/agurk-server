@@ -23,24 +23,24 @@ import { Penalty } from '../../shared/types/penalty';
 
 const createPenaltyFor = (playerId: PlayerId, card: Card): Penalty => ({ card, playerId });
 
-const createPenaltiesFromTurn = (
-  turn: ValidatedTurn,
-): Penalty[] => turn.cards.map(partial(createPenaltyFor, [turn.playerId]));
+function createPenaltiesFromTurn(turn: ValidatedTurn): Penalty[] {
+  return turn.cards.map(partial(createPenaltyFor, [turn.playerId]));
+}
 
-const createPenaltiesFromTurns = (
-  turns: ValidatedTurn[],
-): Penalty[] => chain(createPenaltiesFromTurn, turns);
+function createPenaltiesFromTurns(turns: ValidatedTurn[]): Penalty[] {
+  return chain(createPenaltiesFromTurn, turns);
+}
 
-const findPenaltyCardsFromRounds = (rounds: Round[]): Card[] => {
+function findPenaltyCardsFromRounds(rounds: Round[]): Card[] {
   const roundPenalties = findPenaltiesFromRounds(rounds);
   return roundPenalties.map(penalty => penalty.card);
-};
+}
 
-const iterate = async (
+async function iterate(
   players: Player[],
   roundState: RoundState,
   roomApi: RoomApi,
-): Promise<RoundState> => {
+): Promise<RoundState> {
   const startingPlayerId = chooseCycleStartingPlayerId(roundState);
   const orderedPlayers = rotatePlayersToPlayerId(players, startingPlayerId);
   const orderedActivePlayers = findActivePlayers(roundState.playerIds, roundState.outPlayers, orderedPlayers);
@@ -62,34 +62,34 @@ const iterate = async (
   return isRoundFinished(newRoundState)
     ? newRoundState
     : iterate(orderedActivePlayers, newRoundState, roomApi);
-};
+}
 
-const broadcastFinishedRound = (
+function broadcastFinishedRound(
   roomApi: RoomApi,
   winner: PlayerId,
   penalties: Penalty[],
   finishedRoundState: RoundState,
-): void => {
+): void {
   roomApi.broadcastEndRound();
   roomApi.broadcastRoundWinner(winner);
   roomApi.broadcastPenalties(penalties);
   roomApi.broadcastOutPlayers(finishedRoundState.outPlayers);
-};
+}
 
-const findLoosingRoundTurns = (roundState: RoundState): ValidatedTurn[] => {
+function findLoosingRoundTurns(roundState: RoundState): ValidatedTurn[] {
   const { cycles } = roundState;
   const lastCycle = last(cycles);
   const moreThanOneTurnPlayed = lastCycle && lastCycle.turns.length > 1;
   return moreThanOneTurnPlayed
     ? lastCycle.highestTurns
     : [];
-};
+}
 
-const finishRound = (
+function finishRound(
   finishedRoundState: RoundState,
   dealerApi: DealerApi,
   roomApi: RoomApi,
-): Round => {
+): Round {
   const winner = chooseRoundWinner(finishedRoundState, dealerApi.samplePlayerId);
   const loosingTurns = findLoosingRoundTurns(finishedRoundState);
   const penalties = createPenaltiesFromTurns(loosingTurns);
@@ -101,20 +101,20 @@ const finishRound = (
     winner,
     penalties,
   };
-};
+}
 
-const broadcastStartRound = (roomApi: RoomApi, playerIds: PlayerId[]): void => {
+function broadcastStartRound(roomApi: RoomApi, playerIds: PlayerId[]): void {
   roomApi.broadcastStartRound();
   roomApi.broadcastPlayers(playerIds);
   roomApi.broadcastPlayerOrder(playerIds);
-};
+}
 
-export default async (
+export default async function (
   players: Player[],
   gameState: GameState,
   roomApi: RoomApi,
   dealerApi: DealerApi,
-): Promise<Round> => {
+): Promise<Round> {
   const playerIds = mapPlayersToPlayerIds(players);
 
   broadcastStartRound(roomApi, playerIds);
@@ -138,4 +138,4 @@ export default async (
   }, roomApi);
 
   return finishRound(finishedRoundState, dealerApi, roomApi);
-};
+}

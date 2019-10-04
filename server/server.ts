@@ -3,7 +3,7 @@ import http from 'http';
 import handleConnection from './controllers/session';
 import logger from './logger';
 
-export default (port: number): void => {
+export default function (port: number): void {
   const server = http.createServer();
   const wsServer = new WebSocket.Server({ server });
 
@@ -13,4 +13,4 @@ export default (port: number): void => {
     const address = server.address();
     logger.info(`server listening on ${JSON.stringify(address)}`);
   });
-};
+}

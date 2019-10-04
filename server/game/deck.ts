@@ -14,21 +14,23 @@ export const JOKER_COLORS: Color[] = [Color.BLACK, Color.RED, Color.WHITE];
 
 export const JOKER_RANK: JokerRank = 15;
 
-const createJokerCards = (): JokerCard[] => {
+function createJokerCards(): JokerCard[] {
   const jokerCount = JOKER_COLORS.length;
   return Array.from(new Array(jokerCount)).map((_, index) => (createJokerCard(JOKER_COLORS[index])));
-};
+}
 
-const createSuitCards = (): SuitCard[] => {
+function createSuitCards(): SuitCard[] {
   const deckSizeWithoutJokers = SUIT_RANKS.length * SUITS.length;
   return Array.from(new Array(deckSizeWithoutJokers)).map((_, index) => {
     const rank = SUIT_RANKS[index % SUIT_RANKS.length];
     const suit = SUITS[index % SUITS.length];
     return createSuitCard(rank, suit);
   });
-};
+}
 
-export const create = (): Deck => [
-  ...createSuitCards(),
-  ...createJokerCards(),
-];
+export function create(): Deck {
+  return [
+    ...createSuitCards(),
+    ...createJokerCards(),
+  ];
+}

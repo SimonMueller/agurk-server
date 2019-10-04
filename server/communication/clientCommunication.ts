@@ -9,15 +9,15 @@ import createMessage from '../../shared/communication/messages';
 import logger from '../logger';
 import { Sendable } from '../../shared/types/communication';
 
-const parseJsonMessage = (message: string): Message => {
+function parseJsonMessage(message: string): Message {
   try {
     return JSON.parse(message);
   } catch (error) {
     throw Error('received message is not in proper JSON format');
   }
-};
+}
 
-const validateMessageFormat = (message: Message): Message => {
+function validateMessageFormat(message: Message): Message {
   const messageFormatSchema = object().keys({
     type: string().required(),
     data: any(),
@@ -35,7 +35,7 @@ const validateMessageFormat = (message: Message): Message => {
   }
 
   return value;
-};
+}
 
 function validateMessageData<T>(message: Message, messageType: MessageType): T {
   const { data } = message;
@@ -87,10 +87,7 @@ export function on<T, N>(
   });
 }
 
-function send(
-  socket: WebSocket,
-  message: Message,
-): void {
+function send(socket: WebSocket, message: Message): void {
   if (socket.readyState === WebSocket.OPEN) {
     logger.debug('message sent', message);
     const jsonMessage = JSON.stringify(message);

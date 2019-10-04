@@ -10,47 +10,41 @@ export const SUCCESS_RESULT_KIND = 'SUCCESS';
 
 export const ERROR_RESULT_KIND = 'ERROR';
 
-export const findPlayerIndexByPlayerId = (
-  players: Player[],
-  playerId: PlayerId,
-): number => players.findIndex(player => player.id === playerId);
+export function findPlayerIndexByPlayerId(players: Player[], playerId: PlayerId): number {
+  return players.findIndex(player => player.id === playerId);
+}
 
-export const mapPlayersToPlayerIds = (players: Player[]): PlayerId[] => players.map(({ id }) => id);
+export function mapPlayersToPlayerIds(players: Player[]): PlayerId[] {
+  return players.map(({ id }) => id);
+}
 
-export const findPenaltiesFromRounds = (
-  rounds: Round[],
-): Penalty[] => chain(round => round.penalties, rounds);
+export function findPenaltiesFromRounds(rounds: Round[]): Penalty[] {
+  return chain(round => round.penalties, rounds);
+}
 
-export const rotatePlayersToPlayerId = (
-  players: Player[],
-  startingPlayerId: PlayerId,
-): Player[] => {
+export function rotatePlayersToPlayerId(players: Player[], startingPlayerId: PlayerId): Player[] {
   const startingPlayerIndex = findPlayerIndexByPlayerId(players, startingPlayerId);
   return startingPlayerIndex > 0
     ? rotate(players, startingPlayerIndex)
     : players;
-};
+}
 
-export const findActivePlayerIds = (
-  playerIds: PlayerId[],
-  outPlayers: OutPlayer[],
-): PlayerId[] => {
+export function findActivePlayerIds(playerIds: PlayerId[], outPlayers: OutPlayer[]): PlayerId[] {
   const outPlayerIds = outPlayers.map(outPlayer => outPlayer.id);
   return difference(playerIds, outPlayerIds);
-};
+}
 
-export const findPlayersByPlayerIds = (
-  players: Player[],
-  playerIds: PlayerId[],
-): Player[] => players.filter(
-  player => playerIds.find(playerId => playerId === player.id),
-);
+export function findPlayersByPlayerIds(players: Player[], playerIds: PlayerId[]): Player[] {
+  return players.filter(
+    player => playerIds.find(playerId => playerId === player.id),
+  );
+}
 
-export const findActivePlayers = (
+export function findActivePlayers(
   playerIds: PlayerId[],
   outPlayers: OutPlayer[],
   players: Player[],
-): Player[] => {
+): Player[] {
   const activePlayersIds = findActivePlayerIds(playerIds, outPlayers);
   return findPlayersByPlayerIds(players, activePlayersIds);
-};
+}
