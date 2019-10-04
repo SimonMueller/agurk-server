@@ -47,7 +47,9 @@ function isMatchingCardRanks(playedCards: Card[]): boolean {
 }
 
 function isMatchingCardRanksIfFirstTurn(turnCount: number, playedCards: Card[]): boolean {
-  return (turnCount !== 0 ? true : isMatchingCardRanks(playedCards));
+  return turnCount !== 0
+    ? true
+    : isMatchingCardRanks(playedCards);
 }
 
 function isMatchingCycleCardCount(
@@ -55,7 +57,9 @@ function isMatchingCycleCardCount(
   previousTurnCardCount: number,
   playedCards: Card[],
 ): boolean {
-  return (turnCount === 0 ? true : previousTurnCardCount === playedCards.length);
+  return turnCount === 0
+    ? true
+    : previousTurnCardCount === playedCards.length;
 }
 
 function isPlayedCardsNotEmpty(playedCards: Card[]): boolean {
@@ -84,7 +88,7 @@ function isEveryCardOfValidRank(
   playedCards: Card[],
 ): boolean {
   return isEveryCardRankHigherOrEqualThanCurrentMax(cyclePlayedCards, playedCards)
-  || isEveryCardOfLowestRank(availableCards, playedCards);
+    || isEveryCardOfLowestRank(availableCards, playedCards);
 }
 
 function isLastTurn(availableCards: Card[], playedCards: Card[]): boolean {
@@ -174,17 +178,17 @@ export function isGameFinished(gameState: GameState): boolean {
 
 export function chooseRoundStartingPlayerId(gameState: GameState): PlayerId {
   const { rounds, playerIds } = gameState;
-  return (isEmpty(rounds)
+  return isEmpty(rounds)
     ? firstOrThrow(playerIds)
-    : lastOrThrow(rounds).winner);
+    : lastOrThrow(rounds).winner;
 }
 
 export function chooseCycleStartingPlayerId(roundState: RoundState): PlayerId {
   const { cycles } = roundState;
   const { playerIds } = roundState;
-  return (isEmpty(cycles)
+  return isEmpty(cycles)
     ? firstOrThrow(playerIds)
-    : lastOrThrow(lastOrThrow(cycles).highestTurns).playerId);
+    : lastOrThrow(lastOrThrow(cycles).highestTurns).playerId;
 }
 
 function calculatePenaltySum(penaltiesForPlayerId: Penalty[]): number {
@@ -215,9 +219,9 @@ function chooseByLowestPenaltySum(sample: SamplePlayerId, gameState: GameState):
 }
 
 function chooseSingleActivePlayer(playerIds: PlayerId[], outPlayers: OutPlayer[]): PlayerId | undefined {
-  return (isSingleActivePlayer(playerIds, outPlayers)
+  return isSingleActivePlayer(playerIds, outPlayers)
     ? head(findActivePlayerIds(playerIds, outPlayers))
-    : undefined);
+    : undefined;
 }
 
 // TODO: test for both players out because of same card but one with lower penalty
