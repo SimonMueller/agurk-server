@@ -85,23 +85,23 @@ async function iterate(
 }
 
 function createValidGameResult(finishedGameState: GameState, winner: PlayerId): GameResult {
-  return ({
+  return {
     kind: SUCCESS_RESULT_KIND,
     data: {
       ...finishedGameState,
       winner,
     },
-  });
+  };
 }
 
 function createNoWinnerErrorGameResult(gameState: GameState): GameResult {
-  return ({
+  return {
     kind: ERROR_RESULT_KIND,
     error: {
       gameState,
       message: 'no winner could be determined. game will not be counted.',
     },
-  });
+  };
 }
 
 function createInvalidPlayerCountErrorGameResult(players: Player[]): GameResult {
@@ -153,7 +153,7 @@ export default async function (
   roomApi: RoomApi,
   dealerApi: DealerApi,
 ): Promise<GameResult> {
-  return (isValidPlayerCount(players.length)
+  return isValidPlayerCount(players.length)
     ? playGame(roomApi, players, dealerApi)
-    : createInvalidPlayerCountErrorGameResult(players));
+    : createInvalidPlayerCountErrorGameResult(players);
 }
