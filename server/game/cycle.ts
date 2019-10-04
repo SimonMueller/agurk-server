@@ -84,7 +84,8 @@ function filterAvailableCardsFromPlayerHands(
 }
 
 function shouldRetryTurn(turnResult: TurnResult, retriesLeft: number): boolean {
-  return turnResult.kind === ERROR_RESULT_KIND && retriesLeft !== 0;
+  return turnResult.kind === ERROR_RESULT_KIND
+    && retriesLeft !== 0;
 }
 
 async function playTurnWithRetry(
