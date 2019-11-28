@@ -1,4 +1,4 @@
-import { RoomApi } from '../../server/types/room';
+import { RoomApi } from '../../src/types/room';
 
 export default (): jest.Mocked<RoomApi> => ({
   broadcastStartGame: jest.fn(),

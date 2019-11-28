@@ -1,4 +1,4 @@
-import { PlayerApi } from '../../server/types/player';
+import { PlayerApi } from '../../src/types/player';
 
 export default (): jest.Mocked<PlayerApi> => ({
   isConnected: jest.fn(() => true),
