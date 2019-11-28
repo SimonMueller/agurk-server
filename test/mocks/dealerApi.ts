@@ -1,4 +1,4 @@
-import { DealerApi } from '../../server/types/dealer';
+import { DealerApi } from '../../src/types/dealer';
 
 export default (): jest.Mocked<DealerApi> => ({
   createHandsForPlayerIds: jest.fn(),

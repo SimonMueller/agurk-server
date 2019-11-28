@@ -7,10 +7,10 @@
     "start": "node dist/app.js",
     "clean": "rimraf dist",
     "test": "jest --config=.jest.json --silent",
-    "watch": "ts-node app.ts",
+    "watch": "ts-node src/app.ts",
     "build": "npm run clean && tsc",
-    "lint": "eslint app.ts server/**/*.ts shared/**/*.ts test/**/*.ts",
-    "lint:fix": "eslint --fix app.ts server/**/*.ts shared/**/*.ts test/**/*.ts"
+    "lint": "eslint src/**/*.ts test/**/*.ts",
+    "lint:fix": "eslint --fix src/**/*.ts test/**/*.ts"
   },
   "author": "Simon Müller",
   "license": "MIT",
@@ -42,6 +42,7 @@
   },
   "dependencies": {
     "@hapi/joi": "^15.1.0",
+    "agurk-shared": "github:SimonMueller/agurk-shared#semver:0.1",
     "config": "^3.1.0",
     "lodash.sample": "^4.2.1",
     "lodash.shuffle": "^4.2.0",
