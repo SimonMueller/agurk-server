@@ -1,4 +1,5 @@
 # Agurk Server
+![](https://github.com/SimonMueller/agurk-server/workflows/Node%20CI/badge.svg)
 
 This project is still work in progress ...
 
