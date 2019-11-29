@@ -3,8 +3,9 @@ import {
 } from '@hapi/joi';
 import WebSocket from 'ws';
 import { partial } from 'ramda';
-import { Message, MessageType, createMessage } from 'agurk-shared';
+import { Message, createMessage } from 'agurk-shared';
 import logger from '../logger';
+import { MessageType } from '../types/messageType';
 
 function parseJsonMessage<T>(message: string): Message<T> {
   try {
@@ -16,7 +17,7 @@ function parseJsonMessage<T>(message: string): Message<T> {
 
 function validateMessageFormat<T>(message: Message<T>): Message<T> {
   const messageFormatSchema = object().keys({
-    type: string().required(),
+    name: string().required(),
     data: any(),
   });
 
@@ -67,7 +68,7 @@ export function on<T, N>(
       try {
         const validatedMessage = validateJSONMessage<N>(jsonMessage);
 
-        if (validatedMessage.type === expectedMessageType.name) {
+        if (validatedMessage.name === expectedMessageType.name) {
           socket.removeListener('message', handleMessage);
           logger.info('registered message received', validatedMessage);
 
@@ -104,7 +105,7 @@ export function unicast<T>(
     throw Error('unicast message cannot be sent to closed socket');
   }
 
-  const message = createMessage(messageType, data);
+  const message = createMessage(messageType.name, data);
   logger.info('unicast message sent', message);
   send(socket, message);
 }
@@ -114,7 +115,7 @@ export function broadcast<T>(
   messageType: MessageType,
   data?: T,
 ): void {
-  const message = createMessage(messageType, data);
+  const message = createMessage(messageType.name, data);
   logger.info('broadcast message sent', message);
   sockets.forEach(socket => send(socket, message));
 }
@@ -132,7 +133,7 @@ export function request<T>(
       try {
         const validatedMessage = validateJSONMessage<T>(jsonMessage);
 
-        if (validatedMessage.type === expectedMessageType.name) {
+        if (validatedMessage.name === expectedMessageType.name) {
           clearTimeout(timeoutId);
           socket.removeListener('message', handleMessageWithTimeout);
           logger.info('requested message received', validatedMessage);
