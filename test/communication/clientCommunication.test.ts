@@ -1,16 +1,24 @@
 import config from 'config';
 import Joi from '@hapi/joi';
-import { createSuitCard, Suits, messageTypes } from 'agurk-shared';
+import { createSuitCard, MessageName, Suits } from 'agurk-shared';
 import {
   broadcast, on, request, unicast,
 } from '../../src/communication/clientCommunication';
 import createWebsocket from '../mocks/websocket';
+import { MessageType } from '../../src/types/messageType';
+
+function createMessageTypeWithoutValidation(messageName: MessageName): MessageType {
+  return {
+    name: messageName,
+    validationSchema: Joi.any(),
+  };
+}
 
 describe('handle on message', () => {
   test('handler gets executed and resolves', async () => {
     const socket = createWebsocket();
     const messageType = {
-      name: 'messagetype',
+      name: MessageName.PLAYED_CARDS,
       validationSchema: Joi.object().keys({
         test: Joi.string().required(),
         something: Joi.number(),
@@ -23,7 +31,7 @@ describe('handle on message', () => {
     const handler = jest.fn(() => Promise.resolve());
     const resultPromise = on(socket, messageType, handler);
     socket.emit('message', JSON.stringify({
-      type: messageType.name,
+      name: messageType.name,
       data,
     }));
 
@@ -34,13 +42,15 @@ describe('handle on message', () => {
   test('handler never gets executed with wrong message type', () => {
     const handler = jest.fn(() => Promise.resolve());
     const socket = createWebsocket();
-    on(socket, messageTypes.BROADCAST_START_GAME, handler);
+    const messageType = createMessageTypeWithoutValidation(MessageName.BROADCAST_START_GAME);
+
+    on(socket, messageType, handler);
     socket.emit('message', JSON.stringify({
-      type: 'wrongmessagetype',
+      name: 'wrongmessagetype',
       data: 'result',
     }));
     socket.emit('message', JSON.stringify({
-      type: 'someothermessagetype',
+      name: 'someothermessagetype',
     }));
 
     expect(handler).not.toHaveBeenCalled();
@@ -49,7 +59,9 @@ describe('handle on message', () => {
   test('throws on message invalid JSON format', async () => {
     const handler = jest.fn(() => Promise.resolve());
     const socket = createWebsocket();
-    const resultPromise = on(socket, messageTypes.BROADCAST_START_GAME, handler);
+    const messageType = createMessageTypeWithoutValidation(MessageName.BROADCAST_START_GAME);
+
+    const resultPromise = on(socket, messageType, handler);
     socket.emit('message', ', definitely not JSON format { ]');
 
     await expect(resultPromise).rejects.toThrow('JSON');
@@ -58,7 +70,9 @@ describe('handle on message', () => {
   test('throws if message format validation failed', async () => {
     const handler = jest.fn(() => Promise.resolve());
     const socket = createWebsocket();
-    const resultPromise = on(socket, messageTypes.START_GAME, handler);
+    const messageType = createMessageTypeWithoutValidation(MessageName.START_GAME);
+
+    const resultPromise = on(socket, messageType, handler);
     socket.emit('message', JSON.stringify({
       something: 'wrongmessagetype',
     }));
@@ -70,14 +84,14 @@ describe('handle on message', () => {
   test('throws on message data validation', async () => {
     const socket = createWebsocket();
     const messageType = {
-      name: 'messagetype',
+      name: MessageName.PLAYED_CARDS,
       validationSchema: Joi.object().keys({
         test: Joi.string().required(),
         something: Joi.number(),
       }),
     };
     const data = {
-      type: 'messagetype',
+      name: messageType.name,
       data: {
         something: 'test',
       },
@@ -94,18 +108,19 @@ describe('handle on message', () => {
 describe('handle unicast message', () => {
   test('send gets called with correct json message (ready state = 1)', () => {
     const socket = createWebsocket(1);
-    const messageType = messageTypes.BROADCAST_START_ROUND;
+    const messageType = createMessageTypeWithoutValidation(MessageName.BROADCAST_START_ROUND);
+
     unicast(socket, messageType);
 
     const expectedMessage = JSON.stringify({
-      type: messageType.name,
+      name: messageType.name,
     });
     expect(socket.send).toHaveBeenCalledWith(expectedMessage);
   });
 
   test('throws on unicast on closed socket (ready state = 0)', () => {
     const socket = createWebsocket(0);
-    const messageType = messageTypes.ERROR;
+    const messageType = createMessageTypeWithoutValidation(MessageName.ERROR);
 
     expect(() => unicast(socket, messageType)).toThrow();
   });
@@ -118,11 +133,12 @@ describe('handle broadcast message', () => {
       createWebsocket(1),
       createWebsocket(1),
     ];
-    const messageType = messageTypes.BROADCAST_START_ROUND;
+    const messageType = createMessageTypeWithoutValidation(MessageName.BROADCAST_START_ROUND);
+
     broadcast(sockets, messageType);
 
     const expectedMessage = JSON.stringify({
-      type: messageType.name,
+      name: messageType.name,
     });
     expect(sockets[0].send).toHaveBeenCalledWith(expectedMessage);
     expect(sockets[1].send).toHaveBeenCalledWith(expectedMessage);
@@ -136,11 +152,12 @@ describe('handle broadcast message', () => {
       createWebsocket(1),
       createWebsocket(1),
     ];
-    const messageType = messageTypes.BROADCAST_START_ROUND;
+    const messageType = createMessageTypeWithoutValidation(MessageName.BROADCAST_START_ROUND);
+
     broadcast(sockets, messageType);
 
     const expectedMessage = JSON.stringify({
-      type: messageType.name,
+      name: messageType.name,
     });
     expect(sockets[0].send).toHaveBeenCalledWith(expectedMessage);
     expect(sockets[1].send).not.toHaveBeenCalled();
@@ -151,6 +168,11 @@ describe('handle broadcast message', () => {
 
 describe('handle request message', () => {
   const REQUEST_TIMEOUT_IN_MILILIS: number = config.get('server.requestTimeoutInMillis');
+  const REQUESTER_MESSAGE_TYPE = createMessageTypeWithoutValidation(MessageName.REQUEST_CARDS);
+  const EXPECTED_MESSAGE_TYPE = {
+    name: MessageName.PLAYED_CARDS,
+    validationSchema: Joi.array().length(1),
+  };
 
   beforeEach(() => {
     jest.useFakeTimers();
@@ -158,19 +180,17 @@ describe('handle request message', () => {
 
   test('request gets sent and correct result received', async () => {
     const socket = createWebsocket(1);
-    const messageType = messageTypes.REQUEST_CARDS;
-    const expectedMessageType = messageTypes.PLAYED_CARDS;
     const messageData = [createSuitCard(3, Suits.SPADES)];
 
     const resultPromise = request(
       socket,
-      messageType,
-      expectedMessageType,
+      REQUESTER_MESSAGE_TYPE,
+      EXPECTED_MESSAGE_TYPE,
       REQUEST_TIMEOUT_IN_MILILIS,
     );
 
     socket.emit('message', JSON.stringify({
-      type: expectedMessageType.name,
+      name: EXPECTED_MESSAGE_TYPE.name,
       data: messageData,
     }));
 
@@ -182,10 +202,11 @@ describe('handle request message', () => {
 
   test('throws on message invalid JSON format', async () => {
     const socket = createWebsocket(1);
+
     const resultPromise = request(
       socket,
-      messageTypes.REQUEST_CARDS,
-      messageTypes.PLAYED_CARDS,
+      REQUESTER_MESSAGE_TYPE,
+      EXPECTED_MESSAGE_TYPE,
       REQUEST_TIMEOUT_IN_MILILIS,
     );
 
@@ -199,18 +220,17 @@ describe('handle request message', () => {
 
   test('throws on validation error but correct message type', async () => {
     const socket = createWebsocket(1);
-    const expectedMessageType = messageTypes.PLAYED_CARDS;
     const messageData = { something: false };
 
     const resultPromise = request(
       socket,
-      messageTypes.REQUEST_CARDS,
-      expectedMessageType,
+      REQUESTER_MESSAGE_TYPE,
+      EXPECTED_MESSAGE_TYPE,
       REQUEST_TIMEOUT_IN_MILILIS,
     );
 
     socket.emit('message', JSON.stringify({
-      type: expectedMessageType.name,
+      name: EXPECTED_MESSAGE_TYPE.name,
       data: messageData,
     }));
 
@@ -224,8 +244,8 @@ describe('handle request message', () => {
     const socket = createWebsocket(1);
     const resultPromise = request(
       socket,
-      messageTypes.REQUEST_CARDS,
-      messageTypes.PLAYED_CARDS,
+      REQUESTER_MESSAGE_TYPE,
+      EXPECTED_MESSAGE_TYPE,
       REQUEST_TIMEOUT_IN_MILILIS,
     );
 
@@ -239,17 +259,17 @@ describe('handle request message', () => {
     const socket = createWebsocket(1);
     const resultPromise = request(
       socket,
-      messageTypes.REQUEST_CARDS,
-      messageTypes.PLAYED_CARDS,
+      REQUESTER_MESSAGE_TYPE,
+      EXPECTED_MESSAGE_TYPE,
       REQUEST_TIMEOUT_IN_MILILIS,
     );
 
     socket.emit('message', JSON.stringify({
-      type: 'somerandomtype',
+      name: 'somerandomtype',
     }));
 
     socket.emit('message', JSON.stringify({
-      type: messageTypes.START_GAME.name,
+      name: MessageName.START_GAME,
     }));
 
     jest.runAllTimers();

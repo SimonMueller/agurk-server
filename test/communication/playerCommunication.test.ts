@@ -1,5 +1,5 @@
 import {
-  createJokerCard, createSuitCard, Colors, Suits, Card, messageTypes,
+  createJokerCard, createSuitCard, Colors, Suits, Card, MessageName,
 } from 'agurk-shared';
 import { requestCards } from '../../src/communication/playerCommunication';
 import createWebsocket from '../mocks/websocket';
@@ -15,7 +15,7 @@ describe('request cards', () => {
     const resultPromise = requestCards(socket);
 
     socket.emit('message', JSON.stringify({
-      type: messageTypes.PLAYED_CARDS.name,
+      name: MessageName.PLAYED_CARDS,
       data: cards,
     }));
 
@@ -39,7 +39,7 @@ describe('request cards', () => {
     const resultPromise = requestCards(socket);
 
     socket.emit('message', JSON.stringify({
-      type: messageTypes.PLAYED_CARDS.name,
+      name: MessageName.PLAYED_CARDS,
       data: cards,
     }));
 
@@ -54,7 +54,7 @@ describe('request cards', () => {
     const resultPromise = requestCards(socket);
 
     socket.emit('message', JSON.stringify({
-      type: messageTypes.PLAYED_CARDS.name,
+      name: MessageName.PLAYED_CARDS,
       data: cards,
     }));
 
@@ -72,7 +72,7 @@ describe('request cards', () => {
     const resultPromise = requestCards(socket);
 
     socket.emit('message', JSON.stringify({
-      type: messageTypes.PLAYED_CARDS.name,
+      name: MessageName.PLAYED_CARDS,
       data: cards,
     }));
 
@@ -87,7 +87,7 @@ describe('request cards', () => {
     const resultPromise = requestCards(socket);
 
     socket.emit('message', JSON.stringify({
-      type: messageTypes.PLAYED_CARDS.name,
+      name: MessageName.PLAYED_CARDS,
       data: cards,
     }));
 
@@ -102,7 +102,7 @@ describe('request cards', () => {
     const resultPromise = requestCards(socket);
 
     socket.emit('message', JSON.stringify({
-      type: messageTypes.PLAYED_CARDS.name,
+      name: MessageName.PLAYED_CARDS,
       data: cards,
     }));
 
