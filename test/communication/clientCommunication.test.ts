@@ -5,21 +5,21 @@ import {
   broadcast, on, request, unicast,
 } from '../../src/communication/clientCommunication';
 import createWebsocket from '../mocks/websocket';
-import { MessageType } from '../../src/types/messageType';
+import { ExpectedMessage } from '../../src/types/messageType';
 
-function createMessageTypeWithoutValidation(messageName: MessageName): MessageType {
+function createMessageTypeWithoutValidation(messageName: MessageName): ExpectedMessage {
   return {
     name: messageName,
-    validationSchema: Joi.any(),
-  };
+    dataValidationSchema: Joi.any(),
+  } as const;
 }
 
 describe('handle on message', () => {
   test('handler gets executed and resolves', async () => {
     const socket = createWebsocket();
     const messageType = {
-      name: MessageName.PLAYED_CARDS,
-      validationSchema: Joi.object().keys({
+      name: MessageName.PLAY_CARDS,
+      dataValidationSchema: Joi.object().keys({
         test: Joi.string().required(),
         something: Joi.number(),
       }),
@@ -84,8 +84,8 @@ describe('handle on message', () => {
   test('throws on message data validation', async () => {
     const socket = createWebsocket();
     const messageType = {
-      name: MessageName.PLAYED_CARDS,
-      validationSchema: Joi.object().keys({
+      name: MessageName.PLAY_CARDS,
+      dataValidationSchema: Joi.object().keys({
         test: Joi.string().required(),
         something: Joi.number(),
       }),
@@ -108,21 +108,21 @@ describe('handle on message', () => {
 describe('handle unicast message', () => {
   test('send gets called with correct json message (ready state = 1)', () => {
     const socket = createWebsocket(1);
-    const messageType = createMessageTypeWithoutValidation(MessageName.BROADCAST_START_ROUND);
+    const message = { name: MessageName.BROADCAST_START_ROUND } as const;
 
-    unicast(socket, messageType);
+    unicast(socket, message);
 
     const expectedMessage = JSON.stringify({
-      name: messageType.name,
+      name: message.name,
     });
     expect(socket.send).toHaveBeenCalledWith(expectedMessage);
   });
 
   test('throws on unicast on closed socket (ready state = 0)', () => {
     const socket = createWebsocket(0);
-    const messageType = createMessageTypeWithoutValidation(MessageName.ERROR);
+    const message = { name: MessageName.BROADCAST_START_ROUND } as const;
 
-    expect(() => unicast(socket, messageType)).toThrow();
+    expect(() => unicast(socket, message)).toThrow();
   });
 });
 
@@ -133,12 +133,12 @@ describe('handle broadcast message', () => {
       createWebsocket(1),
       createWebsocket(1),
     ];
-    const messageType = createMessageTypeWithoutValidation(MessageName.BROADCAST_START_ROUND);
+    const message = { name: MessageName.BROADCAST_START_ROUND } as const;
 
-    broadcast(sockets, messageType);
+    broadcast(sockets, message);
 
     const expectedMessage = JSON.stringify({
-      name: messageType.name,
+      name: message.name,
     });
     expect(sockets[0].send).toHaveBeenCalledWith(expectedMessage);
     expect(sockets[1].send).toHaveBeenCalledWith(expectedMessage);
@@ -152,12 +152,12 @@ describe('handle broadcast message', () => {
       createWebsocket(1),
       createWebsocket(1),
     ];
-    const messageType = createMessageTypeWithoutValidation(MessageName.BROADCAST_START_ROUND);
+    const message = { name: MessageName.BROADCAST_START_ROUND } as const;
 
-    broadcast(sockets, messageType);
+    broadcast(sockets, message);
 
     const expectedMessage = JSON.stringify({
-      name: messageType.name,
+      name: message.name,
     });
     expect(sockets[0].send).toHaveBeenCalledWith(expectedMessage);
     expect(sockets[1].send).not.toHaveBeenCalled();
@@ -168,10 +168,10 @@ describe('handle broadcast message', () => {
 
 describe('handle request message', () => {
   const REQUEST_TIMEOUT_IN_MILILIS: number = config.get('server.requestTimeoutInMillis');
-  const REQUESTER_MESSAGE_TYPE = createMessageTypeWithoutValidation(MessageName.REQUEST_CARDS);
+  const REQUESTER_MESSAGE_TYPE = { name: MessageName.REQUEST_CARDS } as const;
   const EXPECTED_MESSAGE_TYPE = {
-    name: MessageName.PLAYED_CARDS,
-    validationSchema: Joi.array().length(1),
+    name: MessageName.PLAY_CARDS,
+    dataValidationSchema: Joi.array().length(1),
   };
 
   beforeEach(() => {
