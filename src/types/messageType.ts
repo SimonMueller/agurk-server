@@ -1,7 +1,12 @@
 import { JoiObject } from '@hapi/joi';
 import { MessageName } from 'agurk-shared';
 
-export interface MessageType {
+export interface MessageToBeValidated {
   readonly name: MessageName;
-  readonly validationSchema: JoiObject;
+  readonly data?: unknown;
+}
+
+export interface ExpectedMessage {
+  readonly name: MessageName;
+  readonly dataValidationSchema: JoiObject;
 }

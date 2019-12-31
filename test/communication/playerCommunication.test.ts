@@ -15,7 +15,7 @@ describe('request cards', () => {
     const resultPromise = requestCards(socket);
 
     socket.emit('message', JSON.stringify({
-      name: MessageName.PLAYED_CARDS,
+      name: MessageName.PLAY_CARDS,
       data: cards,
     }));
 
@@ -39,7 +39,7 @@ describe('request cards', () => {
     const resultPromise = requestCards(socket);
 
     socket.emit('message', JSON.stringify({
-      name: MessageName.PLAYED_CARDS,
+      name: MessageName.PLAY_CARDS,
       data: cards,
     }));
 
@@ -54,7 +54,7 @@ describe('request cards', () => {
     const resultPromise = requestCards(socket);
 
     socket.emit('message', JSON.stringify({
-      name: MessageName.PLAYED_CARDS,
+      name: MessageName.PLAY_CARDS,
       data: cards,
     }));
 
@@ -72,7 +72,7 @@ describe('request cards', () => {
     const resultPromise = requestCards(socket);
 
     socket.emit('message', JSON.stringify({
-      name: MessageName.PLAYED_CARDS,
+      name: MessageName.PLAY_CARDS,
       data: cards,
     }));
 
@@ -87,7 +87,7 @@ describe('request cards', () => {
     const resultPromise = requestCards(socket);
 
     socket.emit('message', JSON.stringify({
-      name: MessageName.PLAYED_CARDS,
+      name: MessageName.PLAY_CARDS,
       data: cards,
     }));
 
@@ -102,7 +102,7 @@ describe('request cards', () => {
     const resultPromise = requestCards(socket);
 
     socket.emit('message', JSON.stringify({
-      name: MessageName.PLAYED_CARDS,
+      name: MessageName.PLAY_CARDS,
       data: cards,
     }));
 

@@ -18,7 +18,6 @@ function createPlayerApi(socket: WebSocket): PlayerApi {
     isConnected: (): boolean => socket.readyState === WebSocket.OPEN,
     dealCards: partial(playerCommunication.dealCards, [socket]),
     requestCards: partial(playerCommunication.requestCards, [socket]),
-    sendError: partial(playerCommunication.sendError, [socket]),
   };
 }
 

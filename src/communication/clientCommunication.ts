@@ -3,11 +3,11 @@ import {
 } from '@hapi/joi';
 import WebSocket from 'ws';
 import { partial } from 'ramda';
-import { Message, createMessage } from 'agurk-shared';
+import { Message } from 'agurk-shared';
 import logger from '../logger';
-import { MessageType } from '../types/messageType';
+import { ExpectedMessage, MessageToBeValidated } from '../types/messageType';
 
-function parseJsonMessage<T>(message: string): Message<T> {
+function parseJsonMessage(message: string): object {
   try {
     return JSON.parse(message);
   } catch (error) {
@@ -15,14 +15,14 @@ function parseJsonMessage<T>(message: string): Message<T> {
   }
 }
 
-function validateMessageFormat<T>(message: Message<T>): Message<T> {
+function validateMessageFormat<T>(message: object): MessageToBeValidated {
   const messageFormatSchema = object().keys({
     name: string().required(),
     data: any(),
   });
 
-  const { error, value } = validate<Message<T>>(
-    message,
+  const { error, value } = validate<MessageToBeValidated>(
+    message as MessageToBeValidated,
     messageFormatSchema,
     { stripUnknown: true },
   );
@@ -35,44 +35,44 @@ function validateMessageFormat<T>(message: Message<T>): Message<T> {
   return value;
 }
 
-function validateMessageData<T>(message: Message<T>, messageType: MessageType): T {
-  const { data } = message;
-  const { validationSchema } = messageType;
+function validateMessageData<T>(expected: ExpectedMessage, actual: MessageToBeValidated): T {
+  const { data } = actual;
+  const { dataValidationSchema } = expected;
 
   const { error, value } = validate<T>(
-    data as unknown as T,
-    validationSchema,
+    data as T,
+    dataValidationSchema,
     { stripUnknown: true },
   );
 
   if (error) {
     logger.error(error);
-    throw Error('validation of received message data failed');
+    throw Error('validation of actual received message data failed');
   }
 
   return value;
 }
 
-function validateJSONMessage<T>(jsonMessage: string): Message<T> {
-  const messageObject = parseJsonMessage<T>(jsonMessage);
+function validateJSONMessage(jsonMessage: string): MessageToBeValidated {
+  const messageObject = parseJsonMessage(jsonMessage);
   return validateMessageFormat(messageObject);
 }
 
 export function on<T, N>(
   socket: WebSocket,
-  expectedMessageType: MessageType,
+  expectedMessage: ExpectedMessage,
   messageHandler: (arg: N) => Promise<T>,
 ): Promise<T> {
   return new Promise((resolve, reject): void => {
     async function handleMessage(jsonMessage: string): Promise<void> {
       try {
-        const validatedMessage = validateJSONMessage<N>(jsonMessage);
+        const actualMessage = validateJSONMessage(jsonMessage);
 
-        if (validatedMessage.name === expectedMessageType.name) {
+        if (actualMessage.name === expectedMessage.name) {
           socket.removeListener('message', handleMessage);
-          logger.info('registered message received', validatedMessage);
+          logger.info('registered message received', actualMessage);
 
-          const validatedMessageData = validateMessageData<N>(validatedMessage, expectedMessageType);
+          const validatedMessageData = validateMessageData<N>(expectedMessage, actualMessage);
           const result = await messageHandler(validatedMessageData);
           resolve(result);
         }
@@ -85,7 +85,7 @@ export function on<T, N>(
   });
 }
 
-function send<T>(socket: WebSocket, message: Message<T>): void {
+function send<T>(socket: WebSocket, message: Message): void {
   if (socket.readyState === WebSocket.OPEN) {
     logger.debug('message sent', message);
     const jsonMessage = JSON.stringify(message);
@@ -98,47 +98,43 @@ function send<T>(socket: WebSocket, message: Message<T>): void {
 // TODO: handle unicast failure
 export function unicast<T>(
   socket: WebSocket,
-  messageType: MessageType,
-  data?: T,
+  message: Message,
 ): void {
   if (socket.readyState !== WebSocket.OPEN) {
     throw Error('unicast message cannot be sent to closed socket');
   }
 
-  const message = createMessage(messageType.name, data);
   logger.info('unicast message sent', message);
   send(socket, message);
 }
 
 export function broadcast<T>(
   sockets: WebSocket[],
-  messageType: MessageType,
-  data?: T,
+  message: Message,
 ): void {
-  const message = createMessage(messageType.name, data);
   logger.info('broadcast message sent', message);
   sockets.forEach(socket => send(socket, message));
 }
 
 export function request<T>(
   socket: WebSocket,
-  requesterMessageType: MessageType,
-  expectedMessageType: MessageType,
+  requesterMessage: Message,
+  expectedMessage: ExpectedMessage,
   timeoutInMilliseconds: number,
 ): Promise<T> {
-  unicast(socket, requesterMessageType);
+  unicast(socket, requesterMessage);
 
   return new Promise((resolve, reject): void => {
     function handleMessageWithTimeout(timeoutId: number, jsonMessage: string): void {
       try {
-        const validatedMessage = validateJSONMessage<T>(jsonMessage);
+        const actualMessage = validateJSONMessage(jsonMessage);
 
-        if (validatedMessage.name === expectedMessageType.name) {
+        if (actualMessage.name === expectedMessage.name) {
           clearTimeout(timeoutId);
           socket.removeListener('message', handleMessageWithTimeout);
-          logger.info('requested message received', validatedMessage);
+          logger.info('requested message received', actualMessage);
 
-          const validatedMessageData = validateMessageData<T>(validatedMessage, expectedMessageType);
+          const validatedMessageData = validateMessageData<T>(expectedMessage, actualMessage);
           resolve(validatedMessageData);
         }
       } catch (error) {
