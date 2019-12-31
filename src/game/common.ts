@@ -4,9 +4,7 @@ import { Player } from '../types/player';
 import { Round } from '../types/round';
 import { rotate } from '../util';
 
-// TODO: use enum (currently constants because exhaustiveness checking with an enum does not work here -> investigate)
 export const SUCCESS_RESULT_KIND = 'SUCCESS';
-
 export const ERROR_RESULT_KIND = 'ERROR';
 
 export function findPlayerIndexByPlayerId(players: Player[], playerId: PlayerId): number {

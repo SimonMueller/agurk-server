@@ -4,7 +4,7 @@ import {
   any, array, number, object, string,
 } from '@hapi/joi';
 import {
-  Card, CardKind, Colors, MessageName, Suits,
+  Card, JOKER_CARD_KIND, SUIT_CARD_KIND, Colors, MessageName, Suits,
 } from 'agurk-shared';
 import { GameResult } from '../types/game';
 import { on, request, unicast } from './clientCommunication';
@@ -38,7 +38,7 @@ export function requestCards(socket: WebSocket): Promise<Card[]> {
       rank: number().valid([2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]).required(),
       suit: string().valid(Suits.HEARTS, Suits.CLUBS, Suits.DIAMONDS, Suits.SPADES),
       color: string().valid(Colors.BLACK, Colors.RED, Colors.WHITE),
-      kind: string().valid(CardKind.Suit, CardKind.Joker).required(),
+      kind: string().valid(SUIT_CARD_KIND, JOKER_CARD_KIND).required(),
     }).xor('suit', 'color')).min(1).max(7),
   };
   return request<Card[]>(socket, requesterMessage, expectedMessage, requestTimeoutInMillis);
