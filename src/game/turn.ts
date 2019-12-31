@@ -61,6 +61,7 @@ export default async function (
   const { id: playerId } = player;
 
   roomApi.broadcastStartPlayerTurn(playerId);
+  player.api.availableCards(cycleState.hands[playerId]);
 
   const playedCardsResult = await requestCards(player);
 

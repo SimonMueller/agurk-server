@@ -43,3 +43,11 @@ export function requestCards(socket: WebSocket): Promise<Card[]> {
   };
   return request<Card[]>(socket, requesterMessage, expectedMessage, requestTimeoutInMillis);
 }
+
+export function availableCards(socket: WebSocket, cards: Card[]): void {
+  const message = {
+    name: MessageName.AVAILABLE_CARDS,
+    data: cards,
+  } as const;
+  return unicast(socket, message);
+}
