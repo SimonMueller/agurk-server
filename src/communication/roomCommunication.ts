@@ -14,7 +14,7 @@ export function broadcastGameError(sockets: WebSocket[], error: Error): void {
 
 export function broadcastStartGame(sockets: WebSocket[]): void {
   const message = {
-    name: MessageName.START_GAME,
+    name: MessageName.BROADCAST_START_GAME,
   } as const;
   return broadcast(sockets, message);
 }
