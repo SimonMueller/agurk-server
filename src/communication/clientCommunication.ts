@@ -15,7 +15,7 @@ function parseJsonMessage(message: string): object {
   }
 }
 
-function validateMessageFormat<T>(message: object): MessageToBeValidated {
+function validateMessageFormat(message: object): MessageToBeValidated {
   const messageFormatSchema = object().keys({
     name: string().required(),
     data: any(),
@@ -96,7 +96,7 @@ function send<T>(socket: WebSocket, message: Message): void {
 }
 
 // TODO: handle unicast failure
-export function unicast<T>(
+export function unicast(
   socket: WebSocket,
   message: Message,
 ): void {
@@ -108,7 +108,7 @@ export function unicast<T>(
   send(socket, message);
 }
 
-export function broadcast<T>(
+export function broadcast(
   sockets: WebSocket[],
   message: Message,
 ): void {
