@@ -252,7 +252,7 @@ describe('handle request message', () => {
     jest.runAllTimers();
 
     expect(socket.send).toHaveBeenCalled();
-    await expect(resultPromise).rejects.toThrow('timeout');
+    await expect(resultPromise).rejects.toThrow('Timeout');
   });
 
   test('throws on timeout if messages with unexpected types received', async () => {
@@ -275,6 +275,6 @@ describe('handle request message', () => {
     jest.runAllTimers();
 
     expect(socket.send).toHaveBeenCalled();
-    await expect(resultPromise).rejects.toThrow('timeout');
+    await expect(resultPromise).rejects.toThrow('Timeout');
   });
 });

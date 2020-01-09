@@ -1,8 +1,11 @@
 import {
-  validate, object, string, any,
+  any, object, string, validate,
 } from '@hapi/joi';
+import { fromEventPattern } from 'rxjs';
+import {
+  map, skipWhile, take, tap, timeout,
+} from 'rxjs/operators';
 import WebSocket from 'ws';
-import { partial } from 'ramda';
 import { Message } from 'agurk-shared';
 import logger from '../logger';
 import { ExpectedMessage, MessageToBeValidated } from '../types/messageType';
@@ -124,29 +127,15 @@ export function request<T>(
 ): Promise<T> {
   unicast(socket, requesterMessage);
 
-  return new Promise((resolve, reject): void => {
-    function handleMessageWithTimeout(timeoutId: number, jsonMessage: string): void {
-      try {
-        const actualMessage = validateJSONMessage(jsonMessage);
-
-        if (actualMessage.name === expectedMessage.name) {
-          clearTimeout(timeoutId);
-          socket.removeListener('message', handleMessageWithTimeout);
-          logger.info('requested message received', actualMessage);
-
-          const validatedMessageData = validateMessageData<T>(expectedMessage, actualMessage);
-          resolve(validatedMessageData);
-        }
-      } catch (error) {
-        reject(error);
-      }
-    }
-
-    const timeoutId = setTimeout(() => {
-      socket.removeListener('message', handleMessageWithTimeout);
-      reject(Error(`timeout of ${timeoutInMilliseconds} ms exceeded`));
-    }, timeoutInMilliseconds);
-
-    socket.on('message', partial(handleMessageWithTimeout, [timeoutId]));
-  });
+  const addHandler = (handler: (message: string) => void): WebSocket => socket.addListener('message', handler);
+  const removeHandler = (handler: (message: string) => void): WebSocket => socket.removeListener('message', handler);
+  return fromEventPattern<string>(addHandler, removeHandler)
+    .pipe(
+      map<string, MessageToBeValidated>(validateJSONMessage),
+      skipWhile<MessageToBeValidated>(actualMessage => actualMessage.name !== expectedMessage.name),
+      tap<MessageToBeValidated>(message => logger.info('requested message received', message)),
+      map<MessageToBeValidated, T>(actualMessage => validateMessageData(expectedMessage, actualMessage)),
+      timeout<T>(timeoutInMilliseconds),
+      take(1),
+    ).toPromise<T>();
 }
