@@ -3,7 +3,7 @@ import {
 } from '@hapi/joi';
 import { fromEventPattern, Observable } from 'rxjs';
 import {
-  map, skipWhile, take, tap, timeout,
+  filter, map, take, tap, timeout,
 } from 'rxjs/operators';
 import WebSocket from 'ws';
 import { Message } from 'agurk-shared';
@@ -61,7 +61,7 @@ function validateJSONMessage(jsonMessage: string): MessageToBeValidated {
   return validateMessageFormat(messageObject);
 }
 
-export function on<T, N>(
+export function on<T>(
   socket: WebSocket,
   expectedMessage: ExpectedMessage,
 ): Observable<T> {
@@ -70,7 +70,7 @@ export function on<T, N>(
   return fromEventPattern<string>(addHandler, removeHandler)
     .pipe(
       map<string, MessageToBeValidated>(validateJSONMessage),
-      skipWhile<MessageToBeValidated>(actualMessage => actualMessage.name !== expectedMessage.name),
+      filter<MessageToBeValidated>(actualMessage => actualMessage.name === expectedMessage.name),
       tap<MessageToBeValidated>(message => logger.info('registered message received', message)),
       map<MessageToBeValidated, T>(actualMessage => validateMessageData(expectedMessage, actualMessage)),
     );
@@ -120,7 +120,7 @@ export function request<T>(
   return fromEventPattern<string>(addHandler, removeHandler)
     .pipe(
       map<string, MessageToBeValidated>(validateJSONMessage),
-      skipWhile<MessageToBeValidated>(actualMessage => actualMessage.name !== expectedMessage.name),
+      filter<MessageToBeValidated>(actualMessage => actualMessage.name === expectedMessage.name),
       tap<MessageToBeValidated>(message => logger.info('requested message received', message)),
       map<MessageToBeValidated, T>(actualMessage => validateMessageData(expectedMessage, actualMessage)),
       timeout<T>(timeoutInMilliseconds),
