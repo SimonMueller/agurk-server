@@ -51,7 +51,7 @@ function createDealerApi(): DealerApi {
   };
 }
 
-export default async function (socket: WebSocket): Promise<void> {
+export default function (socket: WebSocket): void {
   logger.info('client connected');
 
   room.push(socket);
