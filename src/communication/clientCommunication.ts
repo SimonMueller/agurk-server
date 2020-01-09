@@ -1,8 +1,11 @@
 import {
-  validate, object, string, any,
+  any, object, string, validate,
 } from '@hapi/joi';
+import { fromEventPattern, Observable } from 'rxjs';
+import {
+  map, skipWhile, take, tap, timeout,
+} from 'rxjs/operators';
 import WebSocket from 'ws';
-import { partial } from 'ramda';
 import { Message } from 'agurk-shared';
 import logger from '../logger';
 import { ExpectedMessage, MessageToBeValidated } from '../types/messageType';
@@ -61,28 +64,16 @@ function validateJSONMessage(jsonMessage: string): MessageToBeValidated {
 export function on<T, N>(
   socket: WebSocket,
   expectedMessage: ExpectedMessage,
-  messageHandler: (arg: N) => Promise<T>,
-): Promise<T> {
-  return new Promise((resolve, reject): void => {
-    async function handleMessage(jsonMessage: string): Promise<void> {
-      try {
-        const actualMessage = validateJSONMessage(jsonMessage);
-
-        if (actualMessage.name === expectedMessage.name) {
-          socket.removeListener('message', handleMessage);
-          logger.info('registered message received', actualMessage);
-
-          const validatedMessageData = validateMessageData<N>(expectedMessage, actualMessage);
-          const result = await messageHandler(validatedMessageData);
-          resolve(result);
-        }
-      } catch (error) {
-        reject(error);
-      }
-    }
-
-    socket.on('message', handleMessage);
-  });
+): Observable<T> {
+  const addHandler = (handler: (message: string) => void): WebSocket => socket.addListener('message', handler);
+  const removeHandler = (handler: (message: string) => void): WebSocket => socket.removeListener('message', handler);
+  return fromEventPattern<string>(addHandler, removeHandler)
+    .pipe(
+      map<string, MessageToBeValidated>(validateJSONMessage),
+      skipWhile<MessageToBeValidated>(actualMessage => actualMessage.name !== expectedMessage.name),
+      tap<MessageToBeValidated>(message => logger.info('registered message received', message)),
+      map<MessageToBeValidated, T>(actualMessage => validateMessageData(expectedMessage, actualMessage)),
+    );
 }
 
 function send<T>(socket: WebSocket, message: Message): void {
@@ -124,29 +115,15 @@ export function request<T>(
 ): Promise<T> {
   unicast(socket, requesterMessage);
 
-  return new Promise((resolve, reject): void => {
-    function handleMessageWithTimeout(timeoutId: number, jsonMessage: string): void {
-      try {
-        const actualMessage = validateJSONMessage(jsonMessage);
-
-        if (actualMessage.name === expectedMessage.name) {
-          clearTimeout(timeoutId);
-          socket.removeListener('message', handleMessageWithTimeout);
-          logger.info('requested message received', actualMessage);
-
-          const validatedMessageData = validateMessageData<T>(expectedMessage, actualMessage);
-          resolve(validatedMessageData);
-        }
-      } catch (error) {
-        reject(error);
-      }
-    }
-
-    const timeoutId = setTimeout(() => {
-      socket.removeListener('message', handleMessageWithTimeout);
-      reject(Error(`timeout of ${timeoutInMilliseconds} ms exceeded`));
-    }, timeoutInMilliseconds);
-
-    socket.on('message', partial(handleMessageWithTimeout, [timeoutId]));
-  });
+  const addHandler = (handler: (message: string) => void): WebSocket => socket.addListener('message', handler);
+  const removeHandler = (handler: (message: string) => void): WebSocket => socket.removeListener('message', handler);
+  return fromEventPattern<string>(addHandler, removeHandler)
+    .pipe(
+      map<string, MessageToBeValidated>(validateJSONMessage),
+      skipWhile<MessageToBeValidated>(actualMessage => actualMessage.name !== expectedMessage.name),
+      tap<MessageToBeValidated>(message => logger.info('requested message received', message)),
+      map<MessageToBeValidated, T>(actualMessage => validateMessageData(expectedMessage, actualMessage)),
+      timeout<T>(timeoutInMilliseconds),
+      take(1),
+    ).toPromise<T>();
 }

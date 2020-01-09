@@ -1,13 +1,14 @@
 import config from 'config';
-import Joi from '@hapi/joi';
+import Joi, { any } from '@hapi/joi';
 import { createSuitCard, MessageName, Suits } from 'agurk-shared';
+import { timeout } from 'rxjs/operators';
 import {
   broadcast, on, request, unicast,
 } from '../../src/communication/clientCommunication';
 import createWebsocket from '../mocks/websocket';
 import { ExpectedMessage } from '../../src/types/messageType';
 
-function createMessageTypeWithoutValidation(messageName: MessageName): ExpectedMessage {
+function createExpectedMessageWithoutValidation(messageName: MessageName): ExpectedMessage {
   return {
     name: messageName,
     dataValidationSchema: Joi.any(),
@@ -15,36 +16,53 @@ function createMessageTypeWithoutValidation(messageName: MessageName): ExpectedM
 }
 
 describe('handle on message', () => {
-  test('handler gets executed and resolves', async () => {
+  test('observer gets executed', (done) => {
     const socket = createWebsocket();
-    const messageType = {
+    const expectedMessage = {
+      name: MessageName.PLAY_CARDS,
+      dataValidationSchema: any().forbidden(),
+    };
+
+    on(socket, expectedMessage).subscribe(() => done());
+
+    socket.emit('message', JSON.stringify({
+      name: expectedMessage.name,
+    }));
+  });
+
+  test('observer gets executed with correct message data', (done) => {
+    const socket = createWebsocket();
+    const expectedMessage = {
       name: MessageName.PLAY_CARDS,
       dataValidationSchema: Joi.object().keys({
-        test: Joi.string().required(),
         something: Joi.number(),
       }),
     };
-    const data = {
-      test: 'result',
-      something: 4,
-    };
-    const handler = jest.fn(() => Promise.resolve());
-    const resultPromise = on(socket, messageType, handler);
-    socket.emit('message', JSON.stringify({
-      name: messageType.name,
-      data,
-    }));
+    on(socket, expectedMessage).subscribe((data) => {
+      expect(data).toEqual({ something: 42 });
+      done();
+    });
 
-    await expect(resultPromise).resolves;
-    expect(handler).toHaveBeenCalled();
+    socket.emit('message', JSON.stringify({
+      name: expectedMessage.name,
+      data: {
+        something: 42,
+      },
+    }));
   });
 
-  test('handler never gets executed with wrong message type', () => {
-    const handler = jest.fn(() => Promise.resolve());
+  test('observer is not executed with wrong message types', (done) => {
+    jest.useFakeTimers();
     const socket = createWebsocket();
-    const messageType = createMessageTypeWithoutValidation(MessageName.BROADCAST_START_GAME);
+    const expectedMessage = createExpectedMessageWithoutValidation(MessageName.BROADCAST_START_GAME);
 
-    on(socket, messageType, handler);
+    on(socket, expectedMessage)
+      .pipe(timeout(5000))
+      .subscribe(
+        () => done('observer should not have been executed'),
+        () => done(),
+      );
+
     socket.emit('message', JSON.stringify({
       name: 'wrongmessagetype',
       data: 'result',
@@ -53,37 +71,38 @@ describe('handle on message', () => {
       name: 'someothermessagetype',
     }));
 
-    expect(handler).not.toHaveBeenCalled();
+    jest.runAllTimers();
   });
 
-  test('throws on message invalid JSON format', async () => {
-    const handler = jest.fn(() => Promise.resolve());
+  test('throws on message invalid JSON format', (done) => {
     const socket = createWebsocket();
-    const messageType = createMessageTypeWithoutValidation(MessageName.BROADCAST_START_GAME);
+    const expectedMessage = createExpectedMessageWithoutValidation(MessageName.BROADCAST_START_GAME);
 
-    const resultPromise = on(socket, messageType, handler);
+    on(socket, expectedMessage).subscribe(
+      () => done('should not have been called)'),
+      () => done(),
+    );
+
     socket.emit('message', ', definitely not JSON format { ]');
-
-    await expect(resultPromise).rejects.toThrow('JSON');
   });
 
-  test('throws if message format validation failed', async () => {
-    const handler = jest.fn(() => Promise.resolve());
+  test('throws if message format validation failed', (done) => {
     const socket = createWebsocket();
-    const messageType = createMessageTypeWithoutValidation(MessageName.START_GAME);
+    const expectedMessage = createExpectedMessageWithoutValidation(MessageName.START_GAME);
 
-    const resultPromise = on(socket, messageType, handler);
+    on(socket, expectedMessage).subscribe(
+      () => done('should not have been called)'),
+      () => done(),
+    );
+
     socket.emit('message', JSON.stringify({
       something: 'wrongmessagetype',
     }));
-
-    await expect(resultPromise).rejects.toThrow('validation');
-    expect(handler).not.toHaveBeenCalled();
   });
 
-  test('throws on message data validation', async () => {
+  test('throws on message data validation', (done) => {
     const socket = createWebsocket();
-    const messageType = {
+    const expectedMessage = {
       name: MessageName.PLAY_CARDS,
       dataValidationSchema: Joi.object().keys({
         test: Joi.string().required(),
@@ -91,17 +110,18 @@ describe('handle on message', () => {
       }),
     };
     const data = {
-      name: messageType.name,
+      name: expectedMessage.name,
       data: {
         something: 'test',
       },
     };
-    const handler = jest.fn(() => Promise.resolve());
-    const resultPromise = on(socket, messageType, handler);
-    socket.emit('message', JSON.stringify(data));
 
-    await expect(resultPromise).rejects.toThrow('validation');
-    expect(handler).not.toHaveBeenCalled();
+    on(socket, expectedMessage).subscribe(
+      () => done('should not have been called)'),
+      () => done(),
+    );
+
+    socket.emit('message', JSON.stringify(data));
   });
 });
 
@@ -252,7 +272,7 @@ describe('handle request message', () => {
     jest.runAllTimers();
 
     expect(socket.send).toHaveBeenCalled();
-    await expect(resultPromise).rejects.toThrow('timeout');
+    await expect(resultPromise).rejects.toThrow('Timeout');
   });
 
   test('throws on timeout if messages with unexpected types received', async () => {
@@ -275,6 +295,6 @@ describe('handle request message', () => {
     jest.runAllTimers();
 
     expect(socket.send).toHaveBeenCalled();
-    await expect(resultPromise).rejects.toThrow('timeout');
+    await expect(resultPromise).rejects.toThrow('Timeout');
   });
 });

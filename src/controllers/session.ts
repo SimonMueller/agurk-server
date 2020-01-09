@@ -1,5 +1,6 @@
 import { partial } from 'ramda';
 import WebSocket from 'ws';
+import { throttleTime } from 'rxjs/operators';
 import logger from '../logger';
 import * as playerCommunication from '../communication/playerCommunication';
 import * as roomCommunication from '../communication/roomCommunication';
@@ -11,7 +12,7 @@ import { RoomApi } from '../types/room';
 import { generateId } from '../util';
 
 // TODO: proper room and session handling
-let room: WebSocket[] = [];
+const room: WebSocket[] = [];
 
 function createPlayerApi(socket: WebSocket): PlayerApi {
   return {
@@ -57,23 +58,24 @@ export default async function (socket: WebSocket): Promise<void> {
 
   // TODO: check max player in room = 7 here
   if (socket === room[0]) {
-    await playerCommunication.onStartGame(
-      socket,
-      async () => {
+    // TODO: handle unsubscribe to properly cleanup
+    playerCommunication.onStartGame(socket)
+      .pipe(
+        // TODO: skip if game is already running
+        throttleTime(10000),
+      )
+      .subscribe(async () => {
         const sockets = room;
         const players = sockets.map((ws: WebSocket) => ({
           id: generateId(),
           api: createPlayerApi(ws),
         }));
         try {
-          return await playGame(players, createRoomApi(sockets), createDealerApi());
+          const gameResult = await playGame(players, createRoomApi(sockets), createDealerApi());
+          logger.info(gameResult);
         } catch (error) {
           logger.error(error);
-          throw error;
         }
-      },
-    );
-
-    room = [];
+      });
   }
 }

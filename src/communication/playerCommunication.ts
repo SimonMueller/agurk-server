@@ -6,18 +6,18 @@ import {
 import {
   Card, JOKER_CARD_KIND, SUIT_CARD_KIND, Colors, MessageName, Suits,
 } from 'agurk-shared';
-import { GameResult } from '../types/game';
+import { Observable } from 'rxjs';
 import { on, request, unicast } from './clientCommunication';
 import { ExpectedMessage } from '../types/messageType';
 
 const requestTimeoutInMillis: number = config.get('server.requestTimeoutInMillis');
 
-export function onStartGame(socket: WebSocket, handler: () => Promise<GameResult>): Promise<GameResult> {
+export function onStartGame(socket: WebSocket): Observable<void> {
   const message = {
     name: MessageName.START_GAME,
     dataValidationSchema: any().forbidden(),
   } as const;
-  return on(socket, message, handler);
+  return on(socket, message);
 }
 
 export function dealCards(socket: WebSocket, cards: Card[]): void {
