@@ -7,7 +7,7 @@
     "start": "node dist/app.js",
     "clean": "rimraf dist",
     "test": "jest --config=.jest.json --silent",
-    "watch": "ts-node src/app.ts",
+    "watch": "nodemon --ext ts,js,json --exec ts-node src/app.ts",
     "build": "npm run clean && tsc",
     "lint": "eslint src/**/*.ts test/**/*.ts",
     "lint:fix": "eslint --fix src/**/*.ts test/**/*.ts"
@@ -34,6 +34,7 @@
     "eslint-config-airbnb-base": "^13.1.0",
     "eslint-plugin-import": "^2.16.0",
     "jest": "^24.8.0",
+    "nodemon": "^2.0.2",
     "rimraf": "^3.0.0",
     "rosie": "^2.0.1",
     "ts-jest": "^24.0.2",
