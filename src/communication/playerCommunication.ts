@@ -7,8 +7,10 @@ import {
   Card, JOKER_CARD_KIND, SUIT_CARD_KIND, Colors, MessageName, Suits,
 } from 'agurk-shared';
 import { Observable } from 'rxjs';
+import { partial } from 'ramda';
 import { on, request, unicast } from './clientCommunication';
 import { ExpectedMessage } from '../types/messageType';
+import { PlayerApi } from '../types/player';
 
 const requestTimeoutInMillis: number = config.get('server.requestTimeoutInMillis');
 
@@ -20,7 +22,7 @@ export function onStartGame(socket: WebSocket): Observable<void> {
   return on(socket, message);
 }
 
-export function dealCards(socket: WebSocket, cards: Card[]): void {
+function dealCards(socket: WebSocket, cards: Card[]): void {
   const message = {
     name: MessageName.DEALT_CARDS,
     data: cards,
@@ -28,7 +30,7 @@ export function dealCards(socket: WebSocket, cards: Card[]): void {
   return unicast(socket, message);
 }
 
-export function requestCards(socket: WebSocket): Promise<Card[]> {
+function requestCards(socket: WebSocket): Promise<Card[]> {
   const requesterMessage = {
     name: MessageName.REQUEST_CARDS,
   } as const;
@@ -44,10 +46,19 @@ export function requestCards(socket: WebSocket): Promise<Card[]> {
   return request<Card[]>(socket, requesterMessage, expectedMessage, requestTimeoutInMillis);
 }
 
-export function availableCards(socket: WebSocket, cards: Card[]): void {
+function availableCards(socket: WebSocket, cards: Card[]): void {
   const message = {
     name: MessageName.AVAILABLE_CARDS,
     data: cards,
   } as const;
   return unicast(socket, message);
+}
+
+export default function create(socket: WebSocket): PlayerApi {
+  return {
+    isConnected: (): boolean => socket.readyState === WebSocket.OPEN,
+    dealCards: partial(dealCards, [socket]),
+    requestCards: partial(requestCards, [socket]),
+    availableCards: partial(availableCards, [socket]),
+  };
 }

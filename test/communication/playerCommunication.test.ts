@@ -1,7 +1,7 @@
 import {
   createJokerCard, createSuitCard, Colors, Suits, Card, MessageName,
 } from 'agurk-shared';
-import { requestCards } from '../../src/communication/playerCommunication';
+import createPlayerApi from '../../src/communication/playerCommunication';
 import createWebsocket from '../mocks/websocket';
 
 describe('request cards', () => {
@@ -12,7 +12,8 @@ describe('request cards', () => {
   test('valid type and data sent', async () => {
     const socket = createWebsocket(1);
     const cards = [createSuitCard(10, Suits.DIAMONDS)];
-    const resultPromise = requestCards(socket);
+    const playerApi = createPlayerApi(socket);
+    const resultPromise = playerApi.requestCards();
 
     socket.emit('message', JSON.stringify({
       name: MessageName.PLAY_CARDS,
@@ -36,7 +37,8 @@ describe('request cards', () => {
       createSuitCard(5, Suits.HEARTS),
       createSuitCard(7, Suits.CLUBS),
     ];
-    const resultPromise = requestCards(socket);
+    const playerApi = createPlayerApi(socket);
+    const resultPromise = playerApi.requestCards();
 
     socket.emit('message', JSON.stringify({
       name: MessageName.PLAY_CARDS,
@@ -51,7 +53,8 @@ describe('request cards', () => {
   test('empty cards sent', async () => {
     const socket = createWebsocket();
     const cards: Card[] = [];
-    const resultPromise = requestCards(socket);
+    const playerApi = createPlayerApi(socket);
+    const resultPromise = playerApi.requestCards();
 
     socket.emit('message', JSON.stringify({
       name: MessageName.PLAY_CARDS,
@@ -69,7 +72,8 @@ describe('request cards', () => {
       createSuitCard(2, Suits.CLUBS),
       createJokerCard(Colors.BLACK),
     ];
-    const resultPromise = requestCards(socket);
+    const playerApi = createPlayerApi(socket);
+    const resultPromise = playerApi.requestCards();
 
     socket.emit('message', JSON.stringify({
       name: MessageName.PLAY_CARDS,
@@ -84,7 +88,8 @@ describe('request cards', () => {
   test('one valid card sent', async () => {
     const socket = createWebsocket();
     const cards = [createSuitCard(2, Suits.CLUBS)];
-    const resultPromise = requestCards(socket);
+    const playerApi = createPlayerApi(socket);
+    const resultPromise = playerApi.requestCards();
 
     socket.emit('message', JSON.stringify({
       name: MessageName.PLAY_CARDS,
@@ -99,7 +104,8 @@ describe('request cards', () => {
   test('invalid card with suit and color sent', async () => {
     const socket = createWebsocket();
     const cards = [{ rank: 12, color: Colors.WHITE, suit: Suits.CLUBS }];
-    const resultPromise = requestCards(socket);
+    const playerApi = createPlayerApi(socket);
+    const resultPromise = playerApi.requestCards();
 
     socket.emit('message', JSON.stringify({
       name: MessageName.PLAY_CARDS,
