@@ -1,7 +1,7 @@
 import {
   createJokerCard, createSuitCard, Colors, Suits, Card, MessageName,
 } from 'agurk-shared';
-import createPlayerApi from '../../src/communication/playerCommunication';
+import createPlayerApi from '../../src/communication/playerApi';
 import createWebsocket from '../mocks/websocket';
 
 describe('request cards', () => {

@@ -1,8 +1,8 @@
 import WebSocket from 'ws';
 import { throttleTime } from 'rxjs/operators';
 import logger from '../logger';
-import createPlayerApi, { onStartGame } from '../communication/playerCommunication';
-import createRoomApi from '../communication/roomCommunication';
+import createPlayerApi, { onStartGame } from '../communication/playerApi';
+import createRoomApi from '../communication/roomApi';
 import playGame from '../game/game';
 import { createHandsForPlayerIds, samplePlayerId } from '../game/dealer';
 import { DealerApi } from '../types/dealer';
