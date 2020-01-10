@@ -10,7 +10,7 @@ import { generateId } from '../util';
 // TODO: proper room and session handling
 const room: WebSocket[] = [];
 
-export default async function (socket: WebSocket): Promise<void> {
+export default function (socket: WebSocket): void {
   logger.info('client connected');
 
   room.push(socket);
