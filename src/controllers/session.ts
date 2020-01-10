@@ -4,19 +4,11 @@ import logger from '../logger';
 import createPlayerApi, { onStartGame } from '../communication/playerApi';
 import createRoomApi from '../communication/roomApi';
 import playGame from '../game/game';
-import { createHandsForPlayerIds, samplePlayerId } from '../game/dealer';
-import { DealerApi } from '../types/dealer';
+import createDealerApi from '../game/dealer';
 import { generateId } from '../util';
 
 // TODO: proper room and session handling
 const room: WebSocket[] = [];
-
-function createDealerApi(): DealerApi {
-  return {
-    createHandsForPlayerIds,
-    samplePlayerId,
-  };
-}
 
 export default async function (socket: WebSocket): Promise<void> {
   logger.info('client connected');

@@ -6,6 +6,7 @@ import { Deck } from '../types/deck';
 import { CardCountToDeal } from '../types/game';
 import { PlayerHands } from '../types/hand';
 import { create as createDeck } from './deck';
+import { DealerApi } from '../types/dealer';
 
 function filterCardsFromDeck(deck: Deck, penaltyCards: Card[]): Deck {
   return differenceWith(cardEquals, deck, penaltyCards);
@@ -25,7 +26,7 @@ function createPlayerHands(
 
 const shuffleDeck = (deck: Deck): Deck => shuffle(deck);
 
-export function createHandsForPlayerIds(
+function createHandsForPlayerIds(
   playerIds: PlayerId[],
   cardsToOmit: Card[],
   cardCountToDeal: CardCountToDeal,
@@ -36,10 +37,17 @@ export function createHandsForPlayerIds(
   return createPlayerHands(shuffledDeck, playerIds, cardCountToDeal);
 }
 
-export function samplePlayerId(playerIds: PlayerId[]): PlayerId {
+function samplePlayerId(playerIds: PlayerId[]): PlayerId {
   const playerId = sample(playerIds);
   if (playerId === undefined || playerId === null) {
     throw Error('cannot sample player id. usually this is caused by passing an empty array.');
   }
   return playerId;
+}
+
+export default function create(): DealerApi {
+  return {
+    createHandsForPlayerIds,
+    samplePlayerId,
+  };
 }

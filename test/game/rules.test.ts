@@ -9,7 +9,7 @@ import {
   isValidPlayerCount,
   validateTurn,
 } from '../../src/game/rules';
-import { samplePlayerId } from '../../src/game/dealer';
+import createDealerApi from '../../src/game/dealer';
 import TurnFactory from '../factories/turn';
 import PlayerId from '../factories/playerId';
 
@@ -651,6 +651,7 @@ describe('check if correct cycle starting player', () => {
 describe('choose round winner', () => {
   test('no cycles in round throws', () => {
     const playerIds = PlayerId.buildList(3);
+    const { samplePlayerId } = createDealerApi();
     const initialRoundState = {
       cycles: [],
       outPlayers: [],
@@ -663,6 +664,7 @@ describe('choose round winner', () => {
 
   test('empty lowest turns in last cycle throws', () => {
     const turns = TurnFactory.buildList(2);
+    const { samplePlayerId } = createDealerApi();
     const initialHands = {
       [turns[0].playerId]: turns[0].cards,
       [turns[1].playerId]: turns[1].cards,
