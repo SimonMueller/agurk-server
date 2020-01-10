@@ -4,7 +4,7 @@ import logger from '../logger';
 import createPlayerApi, { onStartGame } from '../communication/playerApi';
 import createRoomApi from '../communication/roomApi';
 import playGame from '../game/game';
-import createDealerApi from '../game/dealer';
+import createDealer from '../game/dealer';
 import { generateId } from '../util';
 
 // TODO: proper room and session handling
@@ -30,7 +30,7 @@ export default async function (socket: WebSocket): Promise<void> {
           api: createPlayerApi(ws),
         }));
         try {
-          const gameResult = await playGame(players, createRoomApi(sockets), createDealerApi());
+          const gameResult = await playGame(players, createRoomApi(sockets), createDealer());
           logger.info(gameResult);
         } catch (error) {
           logger.error(error);

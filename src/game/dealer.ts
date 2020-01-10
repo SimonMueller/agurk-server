@@ -6,7 +6,7 @@ import { Deck } from '../types/deck';
 import { CardCountToDeal } from '../types/game';
 import { PlayerHands } from '../types/hand';
 import { create as createDeck } from './deck';
-import { DealerApi } from '../types/dealer';
+import { Dealer } from '../types/dealer';
 
 function filterCardsFromDeck(deck: Deck, penaltyCards: Card[]): Deck {
   return differenceWith(cardEquals, deck, penaltyCards);
@@ -45,7 +45,7 @@ function samplePlayerId(playerIds: PlayerId[]): PlayerId {
   return playerId;
 }
 
-export default function create(): DealerApi {
+export default function create(): Dealer {
   return {
     createHandsForPlayerIds,
     samplePlayerId,

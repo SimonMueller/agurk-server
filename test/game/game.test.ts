@@ -1,7 +1,7 @@
 import {
   PlayerId, createJokerCard, createSuitCard, Colors, Suits,
 } from 'agurk-shared';
-import createMockedDealerApi from '../mocks/dealerApi';
+import createMockedDealer from '../mocks/dealer';
 import PlayerFactory from '../factories/player';
 import playGame from '../../src/game/game';
 import createMockedRoomApi from '../mocks/roomApi';
@@ -13,8 +13,8 @@ describe('play game', () => {
   test('game with only 1 player cannot be started', async () => {
     const players = PlayerFactory.buildList(1);
     const roomApi = createMockedRoomApi();
-    const dealerApi = createMockedDealerApi();
-    const gameResult = await playGame(players, roomApi, dealerApi) as FailedResult<GameError>;
+    const dealer = createMockedDealer();
+    const gameResult = await playGame(players, roomApi, dealer) as FailedResult<GameError>;
 
     expect(gameResult.error).toBeDefined();
     expect(gameResult.error.message).toContain('player count not in valid range');
@@ -23,9 +23,9 @@ describe('play game', () => {
   test('game with more than 7 players cannot be started', async () => {
     const players = PlayerFactory.buildList(8);
     const roomApi = createMockedRoomApi();
-    const dealerApi = createMockedDealerApi();
+    const dealer = createMockedDealer();
 
-    const gameResult = await playGame(players, roomApi, dealerApi) as FailedResult<GameError>;
+    const gameResult = await playGame(players, roomApi, dealer) as FailedResult<GameError>;
 
     expect(gameResult.error).toBeDefined();
     expect(gameResult.error.message).toContain('player count not in valid range');
@@ -76,11 +76,11 @@ describe('play game', () => {
         createJokerCard(Colors.BLACK),
       ],
     };
-    const dealerApi = createMockedDealerApi();
-    dealerApi.createHandsForPlayerIds
+    const dealer = createMockedDealer();
+    dealer.createHandsForPlayerIds
       .mockReturnValueOnce(initialHandsRound1)
       .mockReturnValueOnce(initialHandsRound2);
-    dealerApi.samplePlayerId.mockImplementation((array: PlayerId[]) => array[0]);
+    dealer.samplePlayerId.mockImplementation((array: PlayerId[]) => array[0]);
 
     player1.api.requestCards
       // round 1
@@ -115,7 +115,7 @@ describe('play game', () => {
       .mockResolvedValueOnce([createSuitCard(7, Suits.CLUBS)])
       .mockResolvedValueOnce([createJokerCard(Colors.BLACK)]);
 
-    const gameResult = await playGame(players, roomApi, dealerApi) as SuccessResult<Game>;
+    const gameResult = await playGame(players, roomApi, dealer) as SuccessResult<Game>;
 
     expect(gameResult.data).toBeDefined();
     expect(gameResult.data).toMatchObject({
@@ -138,8 +138,8 @@ describe('play game', () => {
       [player2.id]: [createSuitCard(2, Suits.DIAMONDS)],
     };
 
-    const dealerApi = createMockedDealerApi();
-    dealerApi.createHandsForPlayerIds
+    const dealer = createMockedDealer();
+    dealer.createHandsForPlayerIds
       .mockReturnValueOnce(initialHandsRound1);
 
     player1.api.requestCards
@@ -148,7 +148,7 @@ describe('play game', () => {
     player2.api.requestCards
       .mockRejectedValueOnce(new Error('some error occurred'));
 
-    const gameResult = await playGame(players, roomApi, dealerApi) as SuccessResult<Game>;
+    const gameResult = await playGame(players, roomApi, dealer) as SuccessResult<Game>;
 
     expect(gameResult.data).toBeDefined();
     expect(gameResult.data.outPlayers).toEqual([{
@@ -167,8 +167,8 @@ describe('play game', () => {
       [player2.id]: [createSuitCard(2, Suits.DIAMONDS)],
     };
 
-    const dealerApi = createMockedDealerApi();
-    dealerApi.createHandsForPlayerIds
+    const dealer = createMockedDealer();
+    dealer.createHandsForPlayerIds
       .mockReturnValueOnce(initialHandsRound1);
 
     player1.api.requestCards
@@ -177,7 +177,7 @@ describe('play game', () => {
     player2.api.requestCards
       .mockRejectedValueOnce(new Error('some error occurred'));
 
-    const gameResult = await playGame(players, roomApi, dealerApi) as FailedResult<GameError>;
+    const gameResult = await playGame(players, roomApi, dealer) as FailedResult<GameError>;
 
     expect(gameResult.error).toBeDefined();
   });

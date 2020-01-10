@@ -1,6 +1,6 @@
 import { groupBy } from 'ramda';
 import { PlayerId, Penalty } from 'agurk-shared';
-import { DealerApi } from '../types/dealer';
+import { Dealer } from '../types/dealer';
 import { Player } from '../types/player';
 import { GameResult, GameState } from '../types/game';
 import { RoomApi } from '../types/room';
@@ -30,13 +30,13 @@ const getNewGameState = async (
   players: Player[],
   gameState: GameState,
   roomApi: RoomApi,
-  dealerApi: DealerApi,
+  dealer: Dealer,
 ): Promise<GameState> => {
   const round = await playRound(
     players,
     gameState,
     roomApi,
-    dealerApi,
+    dealer,
   );
 
   return {
@@ -56,13 +56,13 @@ async function iterate(
   players: Player[],
   gameState: GameState,
   roomApi: RoomApi,
-  dealerApi: DealerApi,
+  dealer: Dealer,
 ): Promise<GameState> {
   const startingPlayerId = chooseRoundStartingPlayerId(gameState);
   const orderedPlayers = rotatePlayersToPlayerId(players, startingPlayerId);
   const orderedActivePlayers = findActivePlayers(gameState.playerIds, gameState.outPlayers, orderedPlayers);
 
-  const newGameState = await getNewGameState(orderedActivePlayers, gameState, roomApi, dealerApi);
+  const newGameState = await getNewGameState(orderedActivePlayers, gameState, roomApi, dealer);
 
   const penalties = findPenaltiesFromRounds(newGameState.rounds);
   const playerIdsWithExceededPenalty = findPlayersWithExceededPenaltySumThreshold(penalties);
@@ -80,7 +80,7 @@ async function iterate(
 
   return isGameFinished(currentGameState)
     ? currentGameState
-    : iterate(orderedActivePlayers, currentGameState, roomApi, dealerApi);
+    : iterate(orderedActivePlayers, currentGameState, roomApi, dealer);
 }
 
 function createValidGameResult(finishedGameState: GameState, winner: PlayerId): GameResult {
@@ -131,14 +131,14 @@ function broadcastStartGame(roomApi: RoomApi, playerIds: PlayerId[]): void {
   roomApi.broadcastPlayerOrder(playerIds);
 }
 
-async function playGame(roomApi: RoomApi, players: Player[], dealerApi: DealerApi): Promise<GameResult> {
+async function playGame(roomApi: RoomApi, players: Player[], dealer: Dealer): Promise<GameResult> {
   const playerIds = mapPlayersToPlayerIds(players);
   const initialGameState = { playerIds, rounds: [], outPlayers: [] };
 
   broadcastStartGame(roomApi, playerIds);
 
-  const finishedGameState = await iterate(players, initialGameState, roomApi, dealerApi);
-  const winner = chooseGameWinner(dealerApi.samplePlayerId, finishedGameState);
+  const finishedGameState = await iterate(players, initialGameState, roomApi, dealer);
+  const winner = chooseGameWinner(dealer.samplePlayerId, finishedGameState);
 
   broadcastGameResult(winner, roomApi);
 
@@ -150,9 +150,9 @@ async function playGame(roomApi: RoomApi, players: Player[], dealerApi: DealerAp
 export default async function (
   players: Player[],
   roomApi: RoomApi,
-  dealerApi: DealerApi,
+  dealer: Dealer,
 ): Promise<GameResult> {
   return isValidPlayerCount(players.length)
-    ? playGame(roomApi, players, dealerApi)
+    ? playGame(roomApi, players, dealer)
     : createInvalidPlayerCountErrorGameResult(players);
 }

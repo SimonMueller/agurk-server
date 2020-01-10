@@ -2,7 +2,7 @@ import { chain, last, partial } from 'ramda';
 import {
   PlayerId, ValidatedTurn, Card, Penalty,
 } from 'agurk-shared';
-import { DealerApi } from '../types/dealer';
+import { Dealer } from '../types/dealer';
 import { Player } from '../types/player';
 import { GameState } from '../types/game';
 import { RoomApi } from '../types/room';
@@ -86,10 +86,10 @@ function findLoosingRoundTurns(roundState: RoundState): ValidatedTurn[] {
 
 function finishRound(
   finishedRoundState: RoundState,
-  dealerApi: DealerApi,
+  dealer: Dealer,
   roomApi: RoomApi,
 ): Round {
-  const winner = chooseRoundWinner(finishedRoundState, dealerApi.samplePlayerId);
+  const winner = chooseRoundWinner(finishedRoundState, dealer.samplePlayerId);
   const loosingTurns = findLoosingRoundTurns(finishedRoundState);
   const penalties = createPenaltiesFromTurns(loosingTurns);
 
@@ -112,7 +112,7 @@ export default async function (
   players: Player[],
   gameState: GameState,
   roomApi: RoomApi,
-  dealerApi: DealerApi,
+  dealer: Dealer,
 ): Promise<Round> {
   const playerIds = mapPlayersToPlayerIds(players);
 
@@ -122,7 +122,7 @@ export default async function (
   const penaltyCards = findPenaltyCardsFromRounds(rounds);
   const roundCount = rounds.length;
   const cardCountToDeal = calculateCardCountToDeal(roundCount);
-  const playerHands = dealerApi.createHandsForPlayerIds(playerIds, penaltyCards, cardCountToDeal);
+  const playerHands = dealer.createHandsForPlayerIds(playerIds, penaltyCards, cardCountToDeal);
 
   players.forEach((player) => {
     const hand = playerHands[player.id];
@@ -136,5 +136,5 @@ export default async function (
     outPlayers: [],
   }, roomApi);
 
-  return finishRound(finishedRoundState, dealerApi, roomApi);
+  return finishRound(finishedRoundState, dealer, roomApi);
 }

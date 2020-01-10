@@ -4,7 +4,7 @@ import { PlayerHands } from './hand';
 
 export type SamplePlayerId = (playerIds: PlayerId[]) => PlayerId;
 
-export interface DealerApi {
+export interface Dealer {
   readonly createHandsForPlayerIds: (
     playerIds: PlayerId[],
     cardsToOmit: Card[],

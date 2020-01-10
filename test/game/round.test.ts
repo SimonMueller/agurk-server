@@ -3,7 +3,7 @@ import {
 } from 'agurk-shared';
 import PlayerFactory from '../factories/player';
 import createMockedRoomApi from '../mocks/roomApi';
-import createMockedDealerApi from '../mocks/dealerApi';
+import createMockedDealer from '../mocks/dealer';
 import playRound from '../../src/game/round';
 
 
@@ -39,9 +39,9 @@ describe('play round', () => {
         createSuitCard(8, Suits.DIAMONDS),
       ],
     };
-    const dealerApi = createMockedDealerApi();
-    dealerApi.createHandsForPlayerIds.mockReturnValueOnce(initialHands);
-    dealerApi.samplePlayerId.mockImplementation((array: PlayerId[]) => array[0]);
+    const dealer = createMockedDealer();
+    dealer.createHandsForPlayerIds.mockReturnValueOnce(initialHands);
+    dealer.samplePlayerId.mockImplementation((array: PlayerId[]) => array[0]);
 
     player1.api.requestCards
       .mockResolvedValueOnce([createSuitCard(8, Suits.HEARTS)])
@@ -61,7 +61,7 @@ describe('play round', () => {
       .mockResolvedValueOnce([createSuitCard(7, Suits.DIAMONDS)])
       .mockResolvedValueOnce([createSuitCard(8, Suits.DIAMONDS)]);
 
-    const round = await playRound(players, gameState, roomApi, dealerApi);
+    const round = await playRound(players, gameState, roomApi, dealer);
 
     expect(round).toMatchObject({
       initialHands,
@@ -100,9 +100,9 @@ describe('play round', () => {
         createSuitCard(3, Suits.CLUBS),
       ],
     };
-    const dealerApi = createMockedDealerApi();
-    dealerApi.createHandsForPlayerIds.mockReturnValueOnce(initialHands);
-    dealerApi.samplePlayerId.mockImplementation((array: PlayerId[]) => array[0]);
+    const dealer = createMockedDealer();
+    dealer.createHandsForPlayerIds.mockReturnValueOnce(initialHands);
+    dealer.samplePlayerId.mockImplementation((array: PlayerId[]) => array[0]);
 
     player1.api.requestCards
       .mockResolvedValueOnce([createJokerCard(Colors.RED)])
@@ -116,7 +116,7 @@ describe('play round', () => {
       .mockResolvedValueOnce([createJokerCard(Colors.BLACK)])
       .mockResolvedValueOnce([createSuitCard(3, Suits.CLUBS)]);
 
-    const { cycles } = await playRound(players, gameState, roomApi, dealerApi);
+    const { cycles } = await playRound(players, gameState, roomApi, dealer);
     const { playerIds: orderedSecondCyclePlayerIds } = cycles[1];
 
     expect(orderedSecondCyclePlayerIds[0]).toEqual(player3.id);
@@ -141,9 +141,9 @@ describe('play round', () => {
       [player2.id]: [createSuitCard(5, Suits.SPADES)],
       [player3.id]: [createSuitCard(5, Suits.CLUBS)],
     };
-    const dealerApi = createMockedDealerApi();
-    dealerApi.createHandsForPlayerIds.mockReturnValueOnce(initialHands);
-    dealerApi.samplePlayerId.mockReturnValueOnce(player1.id);
+    const dealer = createMockedDealer();
+    dealer.createHandsForPlayerIds.mockReturnValueOnce(initialHands);
+    dealer.samplePlayerId.mockReturnValueOnce(player1.id);
 
     player1.api.requestCards
       .mockResolvedValueOnce([createSuitCard(5, Suits.DIAMONDS)]);
@@ -154,7 +154,7 @@ describe('play round', () => {
     player3.api.requestCards
       .mockResolvedValueOnce([createSuitCard(5, Suits.CLUBS)]);
 
-    const round = await playRound(players, gameState, roomApi, dealerApi);
+    const round = await playRound(players, gameState, roomApi, dealer);
 
     expect(round.penalties).toEqual([
       {
@@ -187,9 +187,9 @@ describe('play round', () => {
       [player1.id]: [createSuitCard(8, Suits.CLUBS)],
       [player2.id]: [createSuitCard(9, Suits.HEARTS)],
     };
-    const dealerApi = createMockedDealerApi();
-    dealerApi.createHandsForPlayerIds.mockReturnValueOnce(initialHands);
-    dealerApi.samplePlayerId.mockReturnValueOnce(player1.id);
+    const dealer = createMockedDealer();
+    dealer.createHandsForPlayerIds.mockReturnValueOnce(initialHands);
+    dealer.samplePlayerId.mockReturnValueOnce(player1.id);
 
     player1.api.requestCards
       .mockResolvedValueOnce([createSuitCard(8, Suits.CLUBS)]);
@@ -197,7 +197,7 @@ describe('play round', () => {
     player2.api.requestCards
       .mockRejectedValueOnce(new Error('some error happened'));
 
-    const round = await playRound(players, gameState, roomApi, dealerApi);
+    const round = await playRound(players, gameState, roomApi, dealer);
 
     expect(round.outPlayers).toMatchObject([{
       id: player2.id,
@@ -219,9 +219,9 @@ describe('play round', () => {
       [player1.id]: [createSuitCard(7, Suits.DIAMONDS)],
       [player2.id]: [createSuitCard(3, Suits.CLUBS)],
     };
-    const dealerApi = createMockedDealerApi();
-    dealerApi.createHandsForPlayerIds.mockReturnValueOnce(initialHands);
-    dealerApi.samplePlayerId.mockReturnValueOnce(player1.id);
+    const dealer = createMockedDealer();
+    dealer.createHandsForPlayerIds.mockReturnValueOnce(initialHands);
+    dealer.samplePlayerId.mockReturnValueOnce(player1.id);
 
     player1.api.requestCards
       .mockRejectedValueOnce(new Error('some error happened'));
@@ -229,7 +229,7 @@ describe('play round', () => {
     player2.api.requestCards
       .mockResolvedValueOnce([createSuitCard(3, Suits.CLUBS)]);
 
-    const round = await playRound(players, gameState, roomApi, dealerApi);
+    const round = await playRound(players, gameState, roomApi, dealer);
 
     expect(round.penalties).toHaveLength(0);
     expect(round.winner).toEqual(player1.id);
