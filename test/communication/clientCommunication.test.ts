@@ -297,4 +297,29 @@ describe('handle request message', () => {
     expect(socket.send).toHaveBeenCalled();
     await expect(resultPromise).rejects.toThrow('Timeout');
   });
+
+  test('first correct message from request resolves', async () => {
+    const socket = createWebsocket(1);
+    const resultPromise = request(
+      socket,
+      REQUESTER_MESSAGE_TYPE,
+      EXPECTED_MESSAGE_TYPE,
+      REQUEST_TIMEOUT_IN_MILILIS,
+    );
+
+    socket.emit('message', JSON.stringify({
+      name: EXPECTED_MESSAGE_TYPE.name,
+      data: [createSuitCard(3, Suits.SPADES)],
+    }));
+
+    socket.emit('message', JSON.stringify({
+      name: EXPECTED_MESSAGE_TYPE.name,
+      data: [createSuitCard(6, Suits.DIAMONDS)],
+    }));
+
+    jest.runAllTimers();
+
+    expect(socket.send).toHaveBeenCalled();
+    await expect(resultPromise).resolves.toEqual([createSuitCard(3, Suits.SPADES)]);
+  });
 });
