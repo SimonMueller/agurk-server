@@ -1,7 +1,6 @@
 # Agurk Server
 
 [![Greenkeeper badge](https://badges.greenkeeper.io/SimonMueller/agurk-server.svg)](https://greenkeeper.io/)
-
 ![](https://github.com/SimonMueller/agurk-server/workflows/Node%20CI/badge.svg)
 
 This project is still work in progress ...
