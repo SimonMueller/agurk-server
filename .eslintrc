@@ -7,7 +7,18 @@
   "parser": "@typescript-eslint/parser",
   "rules": {
     "max-len": [2, { "code":  120}],
-    "func-style": [2, "declaration", { "allowArrowFunctions": true }]
+    "arrow-parens": [2, "as-needed", { "requireForBlockBody": true }],
+    "func-style": [2, "declaration", { "allowArrowFunctions": true }],
+    "import/extensions": [
+      "error",
+      "ignorePackages",
+      {
+        "js": "never",
+        "jsx": "never",
+        "ts": "never",
+        "tsx": "never"
+      }
+    ]
   },
   "env": {
     "jest": true,
