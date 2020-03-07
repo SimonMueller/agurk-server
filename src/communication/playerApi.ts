@@ -37,7 +37,7 @@ function requestCards(socket: WebSocket): Promise<Card[]> {
   const expectedMessage: ExpectedMessage = {
     name: MessageName.PLAY_CARDS,
     dataValidationSchema: array().items(object().keys({
-      rank: number().valid([2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]).required(),
+      rank: number().valid(2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15).required(),
       suit: string().valid(Suits.HEARTS, Suits.CLUBS, Suits.DIAMONDS, Suits.SPADES),
       color: string().valid(Colors.BLACK, Colors.RED, Colors.WHITE),
       kind: string().valid(SUIT_CARD_KIND, JOKER_CARD_KIND).required(),

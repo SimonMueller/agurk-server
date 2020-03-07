@@ -1,7 +1,7 @@
-import uuid from 'uuid/v4';
+import { v4 as uuidv4 } from 'uuid';
 import { last, head } from 'ramda';
 
-export const generateId = (): string => uuid();
+export const generateId = (): string => uuidv4();
 
 export function rotate <T>(array: T[], count: number): T[] {
   const index = count % array.length;

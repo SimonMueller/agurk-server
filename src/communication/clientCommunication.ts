@@ -1,5 +1,5 @@
 import {
-  any, object, string, validate,
+  any, object, string,
 } from '@hapi/joi';
 import { fromEventPattern, Observable } from 'rxjs';
 import {
@@ -24,9 +24,8 @@ function validateMessageFormat(message: object): MessageToBeValidated {
     data: any(),
   });
 
-  const { error, value } = validate<MessageToBeValidated>(
+  const { error, value } = messageFormatSchema.validate(
     message as MessageToBeValidated,
-    messageFormatSchema,
     { stripUnknown: true },
   );
 
@@ -42,9 +41,8 @@ function validateMessageData<T>(expected: ExpectedMessage, actual: MessageToBeVa
   const { data } = actual;
   const { dataValidationSchema } = expected;
 
-  const { error, value } = validate<T>(
+  const { error, value } = dataValidationSchema.validate(
     data as T,
-    dataValidationSchema,
     { stripUnknown: true },
   );
 

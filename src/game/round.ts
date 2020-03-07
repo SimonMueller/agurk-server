@@ -1,23 +1,18 @@
 import { chain, last, partial } from 'ramda';
 import {
-  PlayerId, ValidatedTurn, Card, Penalty,
+  Card, Penalty, PlayerId, ValidatedTurn,
 } from 'agurk-shared';
 import { Dealer } from '../types/dealer';
 import { Player } from '../types/player';
 import { GameState } from '../types/game';
 import { RoomApi } from '../types/room';
-import {
-  Round, RoundState,
-} from '../types/round';
+import { Round, RoundState } from '../types/round';
 import playCycle from './cycle';
 import {
-  isRoundFinished,
-  chooseCycleStartingPlayerId,
-  chooseRoundWinner,
-  calculateCardCountToDeal,
+  calculateCardCountToDeal, chooseCycleStartingPlayerId, chooseRoundWinner, isRoundFinished,
 } from './rules';
 import {
-  mapPlayersToPlayerIds, rotatePlayersToPlayerId, findActivePlayers, findPenaltiesFromRounds,
+  findActivePlayers, findPenaltiesFromRounds, mapPlayersToPlayerIds, rotatePlayersToPlayerId,
 } from './common';
 
 const createPenaltyFor = (playerId: PlayerId, card: Card): Penalty => ({ card, playerId });
@@ -78,8 +73,7 @@ function broadcastFinishedRound(
 function findLoosingRoundTurns(roundState: RoundState): ValidatedTurn[] {
   const { cycles } = roundState;
   const lastCycle = last(cycles);
-  const moreThanOneTurnPlayed = lastCycle && lastCycle.turns.length > 1;
-  return moreThanOneTurnPlayed
+  return lastCycle && lastCycle.turns.length > 1
     ? lastCycle.highestTurns
     : [];
 }
