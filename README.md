@@ -1,5 +1,6 @@
 # Agurk Server
 ![](https://github.com/SimonMueller/agurk-server/workflows/Node%20CI/badge.svg)
+[![Known Vulnerabilities](https://snyk.io/test/github/SimonMueller/agurk-server/badge.svg)](https://snyk.io/test/github/SimonMueller/agurk-server)
 
 This project is still work in progress ...
 
