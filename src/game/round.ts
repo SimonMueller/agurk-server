@@ -62,12 +62,10 @@ function broadcastFinishedRound(
   roomApi: RoomApi,
   winner: PlayerId,
   penalties: Penalty[],
-  finishedRoundState: RoundState,
 ): void {
   roomApi.broadcastEndRound();
   roomApi.broadcastRoundWinner(winner);
   roomApi.broadcastPenalties(penalties);
-  roomApi.broadcastOutPlayers(finishedRoundState.outPlayers);
 }
 
 function findLoosingRoundTurns(roundState: RoundState): ValidatedTurn[] {
@@ -87,7 +85,7 @@ function finishRound(
   const loosingTurns = findLoosingRoundTurns(finishedRoundState);
   const penalties = createPenaltiesFromTurns(loosingTurns);
 
-  broadcastFinishedRound(roomApi, winner, penalties, finishedRoundState);
+  broadcastFinishedRound(roomApi, winner, penalties);
 
   return {
     ...finishedRoundState,
