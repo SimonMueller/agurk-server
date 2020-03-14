@@ -85,9 +85,9 @@ function send<T>(socket: WebSocket, message: Message): void {
 }
 
 // TODO: handle unicast failure
-export function unicast(
+export function unicast<T extends Message>(
   socket: WebSocket,
-  message: Message,
+  message: T,
 ): void {
   if (socket.readyState !== WebSocket.OPEN) {
     throw Error('unicast message cannot be sent to closed socket');
@@ -97,9 +97,9 @@ export function unicast(
   send(socket, message);
 }
 
-export function broadcast(
+export function broadcast<T extends Message>(
   sockets: WebSocket[],
-  message: Message,
+  message: T,
 ): void {
   logger.info('broadcast message sent', message);
   sockets.forEach(socket => send(socket, message));

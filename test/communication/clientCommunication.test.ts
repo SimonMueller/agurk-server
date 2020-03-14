@@ -128,7 +128,7 @@ describe('handle on message', () => {
 describe('handle unicast message', () => {
   test('send gets called with correct json message (ready state = 1)', () => {
     const socket = createWebsocket(1);
-    const message = { name: MessageName.BROADCAST_START_ROUND } as const;
+    const message = { name: MessageName.START_GAME } as const;
 
     unicast(socket, message);
 
@@ -140,7 +140,7 @@ describe('handle unicast message', () => {
 
   test('throws on unicast on closed socket (ready state = 0)', () => {
     const socket = createWebsocket(0);
-    const message = { name: MessageName.BROADCAST_START_ROUND } as const;
+    const message = { name: MessageName.START_GAME } as const;
 
     expect(() => unicast(socket, message)).toThrow();
   });
@@ -153,7 +153,7 @@ describe('handle broadcast message', () => {
       createWebsocket(1),
       createWebsocket(1),
     ];
-    const message = { name: MessageName.BROADCAST_START_ROUND } as const;
+    const message = { name: MessageName.START_GAME } as const;
 
     broadcast(sockets, message);
 
@@ -172,7 +172,7 @@ describe('handle broadcast message', () => {
       createWebsocket(1),
       createWebsocket(1),
     ];
-    const message = { name: MessageName.BROADCAST_START_ROUND } as const;
+    const message = { name: MessageName.START_GAME } as const;
 
     broadcast(sockets, message);
 

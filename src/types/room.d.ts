@@ -1,22 +1,16 @@
 import {
-  OutPlayer, PlayerId, Error, Penalty, TurnError, ValidatedTurn,
+  PlayerId, Error, ValidatedTurn, TurnError, Penalty, OutPlayer,
 } from 'agurk-shared';
 
 export interface RoomApi {
-  readonly broadcastStartGame: (arg: void) => void;
-  readonly broadcastStartRound: (arg: void) => void;
-  readonly broadcastStartCycle: (arg: void) => void;
+  readonly broadcastStartGame: (players: PlayerId[]) => void;
+  readonly broadcastStartRound: (players: PlayerId[]) => void;
+  readonly broadcastStartCycle: (orderedPlayers: PlayerId[]) => void;
   readonly broadcastStartPlayerTurn: (playerId: PlayerId) => void;
   readonly broadcastPlayerTurn: (turn: ValidatedTurn) => void;
-  readonly broadcastEndCycle: (arg: void) => void;
-  readonly broadcastEndRound: (arg: void) => void;
-  readonly broadcastPlayers: (playerIds: PlayerId[]) => void;
-  readonly broadcastGameWinner: (playerId: PlayerId) => void;
-  readonly broadcastPlayerOrder: (playerIds: PlayerId[]) => void;
-  readonly broadcastRoundWinner: (playerId: PlayerId) => void;
-  readonly broadcastPenalties: (penalties: Penalty[]) => void;
-  readonly broadcastOutPlayers: (outPlayers: OutPlayer[]) => void;
-  readonly broadcastEndGame: (arg: void) => void;
+  readonly broadcastEndCycle: (outPlayer: OutPlayer[], highestTurnPlayers: PlayerId[]) => void;
+  readonly broadcastEndRound: (penalties: Penalty[], outPlayers: OutPlayer[], winner: PlayerId) => void;
+  readonly broadcastEndGame: (winner: PlayerId) => void;
   readonly broadcastGameError: (error: Error) => void;
   readonly broadcastPlayerTurnError: (error: TurnError) => void;
 }

@@ -14,9 +14,12 @@ function broadcastGameError(sockets: WebSocket[], error: Error): void {
   return broadcast(sockets, message);
 }
 
-function broadcastStartGame(sockets: WebSocket[]): void {
+function broadcastStartGame(sockets: WebSocket[], players: PlayerId[]): void {
   const message = {
     name: MessageName.BROADCAST_START_GAME,
+    data: {
+      players,
+    },
   } as const;
   return broadcast(sockets, message);
 }
@@ -29,61 +32,60 @@ function broadcastStartPlayerTurn(sockets: WebSocket[], playerId: PlayerId): voi
   return broadcast(sockets, message);
 }
 
-function broadcastEndGame(sockets: WebSocket[]): void {
+function broadcastEndGame(sockets: WebSocket[], winner: PlayerId): void {
   const message = {
     name: MessageName.BROADCAST_END_GAME,
+    data: {
+      winner,
+    },
   } as const;
   return broadcast(sockets, message);
 }
 
-function broadcastEndRound(sockets: WebSocket[]): void {
+function broadcastEndRound(
+  sockets: WebSocket[],
+  penalties: Penalty[],
+  outPlayers: OutPlayer[],
+  winner: PlayerId,
+): void {
   const message = {
     name: MessageName.BROADCAST_END_ROUND,
+    data: {
+      penalties,
+      outPlayers,
+      winner,
+    },
   } as const;
   return broadcast(sockets, message);
 }
 
-function broadcastStartRound(sockets: WebSocket[]): void {
+function broadcastStartRound(sockets: WebSocket[], players: PlayerId[]): void {
   const message = {
     name: MessageName.BROADCAST_START_ROUND,
+    data: {
+      players,
+    },
   } as const;
   return broadcast(sockets, message);
 }
 
-function broadcastEndCycle(sockets: WebSocket[]): void {
+function broadcastEndCycle(sockets: WebSocket[], outPlayers: OutPlayer[], highestTurnPlayers: PlayerId[]): void {
   const message = {
     name: MessageName.BROADCAST_END_CYCLE,
+    data: {
+      outPlayers,
+      highestTurnPlayers,
+    },
   } as const;
   return broadcast(sockets, message);
 }
 
-function broadcastStartCycle(sockets: WebSocket[]): void {
+function broadcastStartCycle(sockets: WebSocket[], orderedPlayers: PlayerId[]): void {
   const message = {
     name: MessageName.BROADCAST_START_CYCLE,
-  } as const;
-  return broadcast(sockets, message);
-}
-
-function broadcastPlayers(sockets: WebSocket[], players: PlayerId[]): void {
-  const message = {
-    name: MessageName.BROADCAST_PLAYERS,
-    data: players,
-  } as const;
-  return broadcast(sockets, message);
-}
-
-function broadcastGameWinner(sockets: WebSocket[], winner: PlayerId): void {
-  const message = {
-    name: MessageName.BROADCAST_GAME_WINNER,
-    data: winner,
-  } as const;
-  return broadcast(sockets, message);
-}
-
-function broadcastPlayerOrder(sockets: WebSocket[], playerOrder: PlayerId[]): void {
-  const message = {
-    name: MessageName.BROADCAST_PLAYER_ORDER,
-    data: playerOrder,
+    data: {
+      orderedPlayers,
+    },
   } as const;
   return broadcast(sockets, message);
 }
@@ -92,30 +94,6 @@ function broadcastPlayerTurn(sockets: WebSocket[], turn: ValidatedTurn): void {
   const message = {
     name: MessageName.BROADCAST_PLAYER_TURN,
     data: turn,
-  } as const;
-  return broadcast(sockets, message);
-}
-
-function broadcastRoundWinner(sockets: WebSocket[], roundWinner: PlayerId): void {
-  const message = {
-    name: MessageName.BROADCAST_ROUND_WINNER,
-    data: roundWinner,
-  } as const;
-  return broadcast(sockets, message);
-}
-
-function broadcastPenalties(sockets: WebSocket[], penalties: Penalty[]): void {
-  const message = {
-    name: MessageName.BROADCAST_PENALTIES,
-    data: penalties,
-  } as const;
-  return broadcast(sockets, message);
-}
-
-function broadcastOutPlayers(sockets: WebSocket[], outPlayers: OutPlayer[]): void {
-  const message = {
-    name: MessageName.BROADCAST_OUT_PLAYERS,
-    data: outPlayers,
   } as const;
   return broadcast(sockets, message);
 }
@@ -137,12 +115,6 @@ export default function create(sockets: WebSocket[]): RoomApi {
     broadcastPlayerTurn: partial(broadcastPlayerTurn, [sockets]),
     broadcastEndCycle: partial(broadcastEndCycle, [sockets]),
     broadcastEndRound: partial(broadcastEndRound, [sockets]),
-    broadcastPlayers: partial(broadcastPlayers, [sockets]),
-    broadcastGameWinner: partial(broadcastGameWinner, [sockets]),
-    broadcastPlayerOrder: partial(broadcastPlayerOrder, [sockets]),
-    broadcastRoundWinner: partial(broadcastRoundWinner, [sockets]),
-    broadcastPenalties: partial(broadcastPenalties, [sockets]),
-    broadcastOutPlayers: partial(broadcastOutPlayers, [sockets]),
     broadcastEndGame: partial(broadcastEndGame, [sockets]),
     broadcastGameError: partial(broadcastGameError, [sockets]),
     broadcastPlayerTurnError: partial(broadcastPlayerTurnError, [sockets]),

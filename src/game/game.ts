@@ -119,16 +119,13 @@ function createInvalidPlayerCountErrorGameResult(players: Player[]): GameResult 
 }
 
 function broadcastGameResult(winner: PlayerId | undefined, roomApi: RoomApi): void {
-  roomApi.broadcastEndGame();
   return winner !== undefined
-    ? roomApi.broadcastGameWinner(winner)
+    ? roomApi.broadcastEndGame(winner)
     : roomApi.broadcastGameError({ error: 'no active players left.' });
 }
 
 function broadcastStartGame(roomApi: RoomApi, playerIds: PlayerId[]): void {
-  roomApi.broadcastStartGame();
-  roomApi.broadcastPlayers(playerIds);
-  roomApi.broadcastPlayerOrder(playerIds);
+  roomApi.broadcastStartGame(playerIds);
 }
 
 async function playGame(roomApi: RoomApi, players: Player[], dealer: Dealer): Promise<GameResult> {

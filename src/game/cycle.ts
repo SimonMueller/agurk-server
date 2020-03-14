@@ -3,7 +3,7 @@ import {
   ascend, chain, descend, differenceWith, head, identity, sort,
 } from 'ramda';
 import {
-  PlayerId, Card, Rank, TurnError, ValidatedTurn, cardEquals,
+  PlayerId, Card, Rank, TurnError, ValidatedTurn, cardEquals, OutPlayer,
 } from 'agurk-shared';
 import logger from '../logger';
 import { Cycle, CycleState } from '../types/cycle';
@@ -165,14 +165,11 @@ async function playTurnsInCycle(
 }
 
 function broadcastStartCycle(roomApi: RoomApi, playerIds: PlayerId[]): void {
-  roomApi.broadcastStartCycle();
-  roomApi.broadcastPlayers(playerIds);
-  roomApi.broadcastPlayerOrder(playerIds);
+  roomApi.broadcastStartCycle(playerIds);
 }
 
-function broadcastFinishedCycle(roomApi: RoomApi, cycleState: CycleState): void {
-  roomApi.broadcastEndCycle();
-  roomApi.broadcastOutPlayers(cycleState.outPlayers);
+function broadcastFinishedCycle(roomApi: RoomApi, outPlayers: OutPlayer[], highestTurnPlayers: PlayerId[]): void {
+  roomApi.broadcastEndCycle(outPlayers, highestTurnPlayers);
 }
 
 export default async function (
@@ -193,8 +190,9 @@ export default async function (
   const { turns } = cycleState;
   const highestTurns = findHighestRankTurns(turns);
   const lowestTurns = findLowestRankTurns(turns);
+  const highestTurnPlayers = highestTurns.map(turn => turn.playerId);
 
-  broadcastFinishedCycle(roomApi, cycleState);
+  broadcastFinishedCycle(roomApi, cycleState.outPlayers, highestTurnPlayers);
 
   return {
     ...cycleState,

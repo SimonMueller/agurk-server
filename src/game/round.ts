@@ -1,6 +1,6 @@
 import { chain, last, partial } from 'ramda';
 import {
-  Card, Penalty, PlayerId, ValidatedTurn,
+  Card, OutPlayer, Penalty, PlayerId, ValidatedTurn,
 } from 'agurk-shared';
 import { Dealer } from '../types/dealer';
 import { Player } from '../types/player';
@@ -62,10 +62,9 @@ function broadcastFinishedRound(
   roomApi: RoomApi,
   winner: PlayerId,
   penalties: Penalty[],
+  outPlayers: OutPlayer[],
 ): void {
-  roomApi.broadcastEndRound();
-  roomApi.broadcastRoundWinner(winner);
-  roomApi.broadcastPenalties(penalties);
+  roomApi.broadcastEndRound(penalties, outPlayers, winner);
 }
 
 function findLoosingRoundTurns(roundState: RoundState): ValidatedTurn[] {
@@ -85,7 +84,7 @@ function finishRound(
   const loosingTurns = findLoosingRoundTurns(finishedRoundState);
   const penalties = createPenaltiesFromTurns(loosingTurns);
 
-  broadcastFinishedRound(roomApi, winner, penalties);
+  broadcastFinishedRound(roomApi, winner, penalties, finishedRoundState.outPlayers);
 
   return {
     ...finishedRoundState,
@@ -95,9 +94,7 @@ function finishRound(
 }
 
 function broadcastStartRound(roomApi: RoomApi, playerIds: PlayerId[]): void {
-  roomApi.broadcastStartRound();
-  roomApi.broadcastPlayers(playerIds);
-  roomApi.broadcastPlayerOrder(playerIds);
+  roomApi.broadcastStartRound(playerIds);
 }
 
 export default async function (
