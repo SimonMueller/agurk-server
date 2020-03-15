@@ -24,7 +24,7 @@ export function onStartGame(socket: WebSocket): Observable<void> {
 
 function dealCards(socket: WebSocket, cards: Card[]): void {
   const message = {
-    name: MessageName.DEALT_CARDS,
+    name: MessageName.AVAILABLE_CARDS_IN_HAND,
     data: cards,
   } as const;
   return unicast(socket, message);
@@ -46,9 +46,9 @@ function requestCards(socket: WebSocket): Promise<Card[]> {
   return request<Card[]>(socket, requesterMessage, expectedMessage, requestTimeoutInMillis);
 }
 
-function availableCards(socket: WebSocket, cards: Card[]): void {
+function availableCardsInHand(socket: WebSocket, cards: Card[]): void {
   const message = {
-    name: MessageName.AVAILABLE_CARDS,
+    name: MessageName.AVAILABLE_CARDS_IN_HAND,
     data: cards,
   } as const;
   return unicast(socket, message);
@@ -59,6 +59,6 @@ export default function create(socket: WebSocket): PlayerApi {
     isConnected: (): boolean => socket.readyState === WebSocket.OPEN,
     dealCards: partial(dealCards, [socket]),
     requestCards: partial(requestCards, [socket]),
-    availableCards: partial(availableCards, [socket]),
+    availableCardsInHand: partial(availableCardsInHand, [socket]),
   };
 }
