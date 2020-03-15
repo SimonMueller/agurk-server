@@ -46,7 +46,7 @@ function broadcastEndRound(
   sockets: WebSocket[],
   penalties: Penalty[],
   outPlayers: OutPlayer[],
-  winner: PlayerId,
+  winner: PlayerId | undefined,
 ): void {
   const message = {
     name: MessageName.BROADCAST_END_ROUND,

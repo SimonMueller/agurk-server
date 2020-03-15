@@ -43,7 +43,7 @@
   },
   "dependencies": {
     "@hapi/joi": "^16.1.8",
-    "agurk-shared": "github:SimonMueller/agurk-shared#semver:4.5",
+    "agurk-shared": "github:SimonMueller/agurk-shared#semver:4.6",
     "config": "^3.3.0",
     "lodash.sample": "^4.2.1",
     "lodash.shuffle": "^4.2.0",
