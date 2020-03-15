@@ -649,7 +649,7 @@ describe('check if correct cycle starting player', () => {
 });
 
 describe('choose round winner', () => {
-  test('no cycles in round throws', () => {
+  test('no cycles in round ends results in no round winner', () => {
     const playerIds = PlayerId.buildList(3);
     const { samplePlayerId } = createDealer();
     const initialRoundState = {
@@ -659,10 +659,10 @@ describe('choose round winner', () => {
       initialHands: {},
     };
 
-    expect(() => chooseRoundWinner(initialRoundState, samplePlayerId)).toThrow('invalid state');
+    expect(chooseRoundWinner(initialRoundState, samplePlayerId)).toBeUndefined();
   });
 
-  test('empty lowest turns in last cycle throws', () => {
+  test('empty lowest turns in last cycle results in no winner', () => {
     const turns = TurnFactory.buildList(2);
     const { samplePlayerId } = createDealer();
     const initialHands = {
@@ -684,6 +684,6 @@ describe('choose round winner', () => {
       initialHands,
     };
 
-    expect(() => chooseRoundWinner(roundState, samplePlayerId)).toThrow('cannot sample player id');
+    expect(chooseRoundWinner(roundState, samplePlayerId)).toBeUndefined();
   });
 });

@@ -59,6 +59,11 @@ async function iterate(
   dealer: Dealer,
 ): Promise<GameState> {
   const startingPlayerId = chooseRoundStartingPlayerId(gameState);
+
+  if (startingPlayerId === undefined) {
+    return gameState;
+  }
+
   const orderedPlayers = rotatePlayersToPlayerId(players, startingPlayerId);
   const orderedActivePlayers = findActivePlayers(gameState.playerIds, gameState.outPlayers, orderedPlayers);
 

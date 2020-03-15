@@ -37,12 +37,8 @@ function createHandsForPlayerIds(
   return createPlayerHands(shuffledDeck, playerIds, cardCountToDeal);
 }
 
-function samplePlayerId(playerIds: PlayerId[]): PlayerId {
-  const playerId = sample(playerIds);
-  if (playerId === undefined || playerId === null) {
-    throw Error('cannot sample player id. usually this is caused by passing an empty array.');
-  }
-  return playerId;
+function samplePlayerId(playerIds: PlayerId[]): PlayerId | undefined {
+  return sample(playerIds);
 }
 
 export default function create(): Dealer {

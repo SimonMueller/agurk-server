@@ -9,10 +9,10 @@ describe('sample player id', () => {
     expect(playerIds).toContain(samplePlayerId(playerIds));
   });
 
-  test('empty array throws', () => {
+  test('empty array results in undefined', () => {
     const dealer = createDealer();
 
-    expect(() => dealer.samplePlayerId([])).toThrow('cannot sample player id');
+    expect(dealer.samplePlayerId([])).toBeUndefined();
   });
 
   test('array with one element results in first element', () => {

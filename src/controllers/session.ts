@@ -8,7 +8,7 @@ import createDealer from '../game/dealer';
 import { generateId } from '../util';
 
 // TODO: proper room and session handling
-const room: WebSocket[] = [];
+let room: WebSocket[] = [];
 
 export default function (socket: WebSocket): void {
   logger.info('client connected');
@@ -34,6 +34,9 @@ export default function (socket: WebSocket): void {
           logger.info(gameResult);
         } catch (error) {
           logger.error(error);
+        } finally {
+          room.forEach(s => s.close());
+          room = [];
         }
       });
   }

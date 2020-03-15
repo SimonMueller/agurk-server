@@ -2,7 +2,7 @@ import { PlayerId, Card } from 'agurk-shared';
 import { CardCountToDeal } from './game';
 import { PlayerHands } from './hand';
 
-export type SamplePlayerId = (playerIds: PlayerId[]) => PlayerId;
+export type SamplePlayerId = (playerIds: PlayerId[]) => PlayerId | undefined;
 
 export interface Dealer {
   readonly createHandsForPlayerIds: (

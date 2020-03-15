@@ -5,7 +5,7 @@ import PlayerFactory from '../factories/player';
 import createMockedRoomApi from '../mocks/roomApi';
 import createMockedDealer from '../mocks/dealer';
 import playRound from '../../src/game/round';
-
+import createDealer from '../../src/game/dealer';
 
 describe('play round', () => {
   test('first round of game with 2 players', async () => {
@@ -233,5 +233,37 @@ describe('play round', () => {
 
     expect(round.penalties).toHaveLength(0);
     expect(round.winner).toEqual(player1.id);
+  });
+
+  test('no players left in round. no winner set and no penalties issued', async () => {
+    const player1 = PlayerFactory.build();
+    const player2 = PlayerFactory.build();
+    const players = [player1, player2];
+    const playerIds = [player1.id, player2.id];
+    const gameState = {
+      playerIds,
+      rounds: [],
+      outPlayers: [],
+    };
+    const roomApi = createMockedRoomApi();
+    const initialHands = {
+      [player1.id]: [createSuitCard(7, Suits.DIAMONDS)],
+      [player2.id]: [createSuitCard(3, Suits.CLUBS)],
+    };
+    const mockedDealer = createMockedDealer();
+    const realDealer = createDealer();
+    mockedDealer.createHandsForPlayerIds.mockReturnValueOnce(initialHands);
+    mockedDealer.samplePlayerId.mockImplementation(realDealer.samplePlayerId);
+
+    player1.api.requestCards
+      .mockRejectedValueOnce(new Error('some error happened'));
+
+    player2.api.requestCards
+      .mockRejectedValueOnce(new Error('some error happened'));
+
+    const round = await playRound(players, gameState, roomApi, mockedDealer);
+
+    expect(round.penalties).toHaveLength(0);
+    expect(round.winner).toBeUndefined();
   });
 });

@@ -9,7 +9,6 @@ import {
   CardCountToDeal, GameState, MaxPlayerCount, MinPlayerCount, PenaltySumThreshold,
 } from '../types/game';
 import { Turn } from '../types/turn';
-import { firstOrThrow, lastOrThrow } from '../util';
 import { RoundState } from '../types/round';
 import { findActivePlayerIds, findPenaltiesFromRounds } from './common';
 import { SamplePlayerId } from '../types/dealer';
@@ -174,19 +173,26 @@ export function isGameFinished(gameState: GameState): boolean {
     || allPlayersOut(playerIds, outPlayers);
 }
 
-export function chooseRoundStartingPlayerId(gameState: GameState): PlayerId {
+export function chooseRoundStartingPlayerId(gameState: GameState): PlayerId | undefined {
   const { rounds, playerIds } = gameState;
   return isEmpty(rounds)
-    ? firstOrThrow(playerIds)
-    : lastOrThrow(rounds).winner;
+    ? head(playerIds)
+    : last(rounds)?.winner;
 }
 
-export function chooseCycleStartingPlayerId(roundState: RoundState): PlayerId {
+function findPlayerIdOfMostRecentHighestTurn(cycles: Cycle[]): PlayerId | undefined {
+  const mostRecentHighestTurn = last(cycles)?.highestTurns;
+  return mostRecentHighestTurn === undefined
+    ? undefined
+    : last(mostRecentHighestTurn)?.playerId;
+}
+
+export function chooseCycleStartingPlayerId(roundState: RoundState): PlayerId | undefined {
   const { cycles } = roundState;
   const { playerIds } = roundState;
   return isEmpty(cycles)
-    ? firstOrThrow(playerIds)
-    : lastOrThrow(lastOrThrow(cycles).highestTurns).playerId;
+    ? head(playerIds)
+    : findPlayerIdOfMostRecentHighestTurn(cycles);
 }
 
 function calculatePenaltySum(penaltiesForPlayerId: Penalty[]): number {
@@ -199,7 +205,7 @@ function choosePlayerIdWithMinPenaltySum(
   sample: SamplePlayerId,
   minPenaltySum: number,
   penaltySumByPlayerId: PenaltySumByPlayerId,
-): PlayerId {
+): PlayerId | undefined {
   const playerIdsWithMinPenalty = keys(pickBy(value => value === minPenaltySum, penaltySumByPlayerId));
   return sample(playerIdsWithMinPenalty);
 }
@@ -232,10 +238,12 @@ export function chooseGameWinner(sample: SamplePlayerId, gameState: GameState): 
     : chooseSingleActivePlayer(playerIds, outPlayers);
 }
 
-export function chooseRoundWinner(roundState: RoundState, sample: SamplePlayerId): PlayerId {
+export function chooseRoundWinner(roundState: RoundState, sample: SamplePlayerId): PlayerId | undefined {
   const { cycles } = roundState;
-  const lastCycle = lastOrThrow(cycles);
-  const winningTurns = lastCycle.lowestTurns;
-  const winners = winningTurns.map(turn => turn.playerId);
-  return sample(winners);
+  const lastCycle = last(cycles);
+  const winningTurns = lastCycle?.lowestTurns;
+  const winners = winningTurns?.map(turn => turn.playerId);
+  return winners !== undefined && winners.length > 0
+    ? sample(winners)
+    : undefined;
 }

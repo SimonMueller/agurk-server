@@ -1,6 +1,6 @@
 import { chain, last, partial } from 'ramda';
 import {
-  Card, OutPlayer, Penalty, PlayerId, ValidatedTurn,
+  Card, Penalty, PlayerId, ValidatedTurn,
 } from 'agurk-shared';
 import { Dealer } from '../types/dealer';
 import { Player } from '../types/player';
@@ -36,6 +36,11 @@ async function iterate(
   roomApi: RoomApi,
 ): Promise<RoundState> {
   const startingPlayerId = chooseCycleStartingPlayerId(roundState);
+
+  if (startingPlayerId === undefined) {
+    return roundState;
+  }
+
   const orderedPlayers = rotatePlayersToPlayerId(players, startingPlayerId);
   const orderedActivePlayers = findActivePlayers(roundState.playerIds, roundState.outPlayers, orderedPlayers);
 
@@ -58,15 +63,6 @@ async function iterate(
     : iterate(orderedActivePlayers, newRoundState, roomApi);
 }
 
-function broadcastFinishedRound(
-  roomApi: RoomApi,
-  winner: PlayerId,
-  penalties: Penalty[],
-  outPlayers: OutPlayer[],
-): void {
-  roomApi.broadcastEndRound(penalties, outPlayers, winner);
-}
-
 function findLoosingRoundTurns(roundState: RoundState): ValidatedTurn[] {
   const { cycles } = roundState;
   const lastCycle = last(cycles);
@@ -84,7 +80,7 @@ function finishRound(
   const loosingTurns = findLoosingRoundTurns(finishedRoundState);
   const penalties = createPenaltiesFromTurns(loosingTurns);
 
-  broadcastFinishedRound(roomApi, winner, penalties, finishedRoundState.outPlayers);
+  roomApi.broadcastEndRound(penalties, finishedRoundState.outPlayers, winner);
 
   return {
     ...finishedRoundState,

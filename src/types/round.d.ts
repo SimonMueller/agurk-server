@@ -10,7 +10,7 @@ export interface RoundState {
 }
 
 interface FinishedRound {
-  readonly winner: PlayerId;
+  readonly winner?: PlayerId;
   readonly penalties: Penalty[];
 }
 
