@@ -129,15 +129,11 @@ function broadcastGameResult(winner: PlayerId | undefined, roomApi: RoomApi): vo
     : roomApi.broadcastGameError({ error: 'no active players left.' });
 }
 
-function broadcastStartGame(roomApi: RoomApi, playerIds: PlayerId[]): void {
-  roomApi.broadcastStartGame(playerIds);
-}
-
 async function playGame(roomApi: RoomApi, players: Player[], dealer: Dealer): Promise<GameResult> {
   const playerIds = mapPlayersToPlayerIds(players);
   const initialGameState = { playerIds, rounds: [], outPlayers: [] };
 
-  broadcastStartGame(roomApi, playerIds);
+  roomApi.broadcastStartGame(playerIds);
 
   const finishedGameState = await iterate(players, initialGameState, roomApi, dealer);
   const winner = chooseGameWinner(dealer.samplePlayerId, finishedGameState);

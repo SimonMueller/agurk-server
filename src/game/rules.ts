@@ -112,7 +112,7 @@ function isMatchingEveryTurnRule(
     isMatchingCardRanksIfFirstTurn(turnCount, playedCards),
     isEveryCardOfValidRank(cyclePlayedCards, availableCards, playedCards),
     isLastTurnSingleCard(availableCards, playedCards),
-  ].every(value => value === true);
+  ].every(value => value);
 }
 
 const mapTurnCards = (turn: ValidatedTurn): Card[] => turn.cards;

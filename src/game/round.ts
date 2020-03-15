@@ -89,10 +89,6 @@ function finishRound(
   };
 }
 
-function broadcastStartRound(roomApi: RoomApi, playerIds: PlayerId[]): void {
-  roomApi.broadcastStartRound(playerIds);
-}
-
 export default async function (
   players: Player[],
   gameState: GameState,
@@ -101,7 +97,7 @@ export default async function (
 ): Promise<Round> {
   const playerIds = mapPlayersToPlayerIds(players);
 
-  broadcastStartRound(roomApi, playerIds);
+  roomApi.broadcastStartRound(playerIds);
 
   const { rounds } = gameState;
   const penaltyCards = findPenaltyCardsFromRounds(rounds);
