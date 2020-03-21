@@ -6,7 +6,7 @@ import {
 } from 'agurk-shared';
 import { Cycle, CycleState } from '../types/cycle';
 import {
-  CardCountToDeal, GameState, MaxPlayerCount, MinPlayerCount, PenaltySumThreshold,
+  CardCountToDeal, GameState, MaxPlayerCount, MinPlayerCount, PenaltySumThreshold, ValidCardCountRangeInclusive,
 } from '../types/game';
 import { Turn } from '../types/turn';
 import { RoundState } from '../types/round';
@@ -21,9 +21,16 @@ const PENALTY_SUM_THRESHOLD: PenaltySumThreshold = 21;
 
 const POSSIBLE_CARD_COUNTS: CardCountToDeal[] = [7, 6, 5, 4, 3, 2, 1, 2, 3, 4, 5, 6];
 
+const VALID_CARD_COUNT_RANGE: ValidCardCountRangeInclusive = [1, 7];
+
 const MAX_PLAYER_COUNT: MaxPlayerCount = 7;
 
 const MIN_PLAYER_COUNT: MinPlayerCount = 2;
+
+export function isValidCardCount(playedCards: Card[]): boolean {
+  return playedCards.length <= VALID_CARD_COUNT_RANGE[1]
+    && playedCards.length >= VALID_CARD_COUNT_RANGE[0];
+}
 
 export function isValidPlayerCount(playerCount: number): boolean {
   return playerCount >= MIN_PLAYER_COUNT && playerCount <= MAX_PLAYER_COUNT;
@@ -106,6 +113,7 @@ function isMatchingEveryTurnRule(
   cyclePlayedCards: Card[],
 ): boolean {
   return [
+    isValidCardCount(playedCards),
     isPlayedCardsNotEmpty(playedCards),
     isMatchingCycleCardCount(turnCount, previousTurnCardCount, playedCards),
     isEveryCardInPlayerHand(availableCards, playedCards),

@@ -3,29 +3,25 @@ import {
 } from 'agurk-shared';
 import createPlayerApi from '../../src/communication/playerApi';
 import createWebsocket from '../mocks/websocket';
+import flushAllPromises from './promiseHelper';
 
-describe('request cards', () => {
-  beforeEach(() => {
-    jest.useFakeTimers();
-  });
-
-  test('valid type and data sent', async () => {
+describe('request cards and expect response', () => {
+  test('with valid type and data', async () => {
     const socket = createWebsocket(1);
     const cards = [createSuitCard(10, Suits.DIAMONDS)];
     const playerApi = createPlayerApi(socket);
     const resultPromise = playerApi.requestCards();
+    await flushAllPromises();
 
     socket.emit('message', JSON.stringify({
       name: MessageName.PLAY_CARDS,
       data: cards,
     }));
 
-    jest.runAllTimers();
-
     await expect(resultPromise).resolves.toEqual(cards);
   });
 
-  test('too many cards', async () => {
+  test('timeouts if only too many cards sent', async () => {
     const socket = createWebsocket();
     const cards = [
       createSuitCard(10, Suits.DIAMONDS),
@@ -39,6 +35,7 @@ describe('request cards', () => {
     ];
     const playerApi = createPlayerApi(socket);
     const resultPromise = playerApi.requestCards();
+    await flushAllPromises();
 
     socket.emit('message', JSON.stringify({
       name: MessageName.PLAY_CARDS,
@@ -46,15 +43,15 @@ describe('request cards', () => {
     }));
 
     jest.runAllTimers();
-
-    await expect(resultPromise).rejects.toThrow('validation');
+    await expect(resultPromise).rejects.toThrow('Timeout');
   });
 
-  test('empty cards sent', async () => {
+  test('timeouts if only empty cards sent', async () => {
     const socket = createWebsocket();
     const cards: Card[] = [];
     const playerApi = createPlayerApi(socket);
     const resultPromise = playerApi.requestCards();
+    await flushAllPromises();
 
     socket.emit('message', JSON.stringify({
       name: MessageName.PLAY_CARDS,
@@ -62,11 +59,10 @@ describe('request cards', () => {
     }));
 
     jest.runAllTimers();
-
-    await expect(resultPromise).rejects.toThrow('validation');
+    await expect(resultPromise).rejects.toThrow('Timeout');
   });
 
-  test('valid joker and suit cards mixed', async () => {
+  test('with valid joker and suit cards mixed', async () => {
     const socket = createWebsocket();
     const cards = [
       createSuitCard(2, Suits.CLUBS),
@@ -74,34 +70,32 @@ describe('request cards', () => {
     ];
     const playerApi = createPlayerApi(socket);
     const resultPromise = playerApi.requestCards();
+    await flushAllPromises();
 
     socket.emit('message', JSON.stringify({
       name: MessageName.PLAY_CARDS,
       data: cards,
     }));
 
-    jest.runAllTimers();
-
     await expect(resultPromise).resolves.toEqual(cards);
   });
 
-  test('one valid card sent', async () => {
+  test('with one valid card sent', async () => {
     const socket = createWebsocket();
     const cards = [createSuitCard(2, Suits.CLUBS)];
     const playerApi = createPlayerApi(socket);
     const resultPromise = playerApi.requestCards();
+    await flushAllPromises();
 
     socket.emit('message', JSON.stringify({
       name: MessageName.PLAY_CARDS,
       data: cards,
     }));
 
-    jest.runAllTimers();
-
     await expect(resultPromise).resolves.toEqual(cards);
   });
 
-  test('invalid card with suit and color sent', async () => {
+  test('timeouts if only invalid card with suit and color sent', async () => {
     const socket = createWebsocket();
     const cards = [{ rank: 12, color: Colors.WHITE, suit: Suits.CLUBS }];
     const playerApi = createPlayerApi(socket);
@@ -114,6 +108,6 @@ describe('request cards', () => {
 
     jest.runAllTimers();
 
-    await expect(resultPromise).rejects.toThrow('validation');
+    await expect(resultPromise).rejects.toThrow('Timeout');
   });
 });

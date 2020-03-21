@@ -9,13 +9,20 @@ import { validateTurn } from './rules';
 import { ERROR_RESULT_KIND, SUCCESS_RESULT_KIND } from './common';
 
 async function requestCards(player: Player): Promise<Result<Error, Card[]>> {
-  try {
-    const cards = await player.api.requestCards();
-    return { kind: SUCCESS_RESULT_KIND, data: cards };
-  } catch (error) {
-    logger.error(error);
-    return { kind: ERROR_RESULT_KIND, error };
+  if (player.api.isConnected()) {
+    try {
+      const cards = await player.api.requestCards();
+      return { kind: SUCCESS_RESULT_KIND, data: cards };
+    } catch (error) {
+      logger.error(error);
+      return { kind: ERROR_RESULT_KIND, error };
+    }
   }
+
+  return {
+    kind: ERROR_RESULT_KIND,
+    error: Error('cannot request cards from disconnected player'),
+  };
 }
 
 function buildPlayerTurnError(playerId: PlayerId, message: string): TurnResult {

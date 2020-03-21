@@ -1,43 +1,97 @@
 import WebSocket from 'ws';
-import { throttleTime } from 'rxjs/operators';
+import { PlayerId } from 'agurk-shared';
+import { Subscription } from 'rxjs';
 import logger from '../logger';
-import createPlayerApi, { onStartGame } from '../communication/playerApi';
+import createPlayerApi from '../communication/playerApi';
 import createRoomApi from '../communication/roomApi';
 import playGame from '../game/game';
 import createDealer from '../game/dealer';
 import { generateId } from '../util';
+import { RoomApi } from '../types/room';
+import { PlayerApi } from '../types/player';
 
-// TODO: proper room and session handling
-let room: WebSocket[] = [];
+// TODO: consistent naming of room, lobby and session
+const lobby: Lobby = {
+  isIdle: true,
+  sessions: [],
+  lobbyApi: createRoomApi([]),
+};
+
+interface PlayerSession {
+  readonly id: string;
+  readonly socket: WebSocket;
+  readonly playerId: PlayerId;
+  readonly playerApi: PlayerApi;
+}
+
+interface Lobby {
+  isIdle: boolean;
+  sessions: PlayerSession[];
+  lobbyApi: RoomApi;
+}
+
+function addSessionToLobby(sessionToAdd: PlayerSession): void {
+  lobby.sessions.push(sessionToAdd);
+  lobby.lobbyApi = createRoomApi(lobby.sessions.map(session => session.socket));
+}
+
+function removeSessionFromLobby(sessionToRemove: PlayerSession): void {
+  lobby.sessions = lobby.sessions.filter(session => sessionToRemove.id !== session.id);
+  lobby.lobbyApi = createRoomApi(lobby.sessions.map(session => session.socket));
+}
+
+function handlePlayerLeave(session: PlayerSession, observeOnStart: Subscription): void {
+  session.socket.on('close', () => {
+    logger.info('player left lobby', session.playerId);
+    observeOnStart.unsubscribe();
+    removeSessionFromLobby(session);
+  });
+}
+
+function createNewSession(socket: WebSocket): PlayerSession {
+  return {
+    id: generateId(),
+    socket,
+    playerId: generateId(),
+    playerApi: createPlayerApi(socket),
+  };
+}
+
+async function onStartGameReceived(): Promise<void> {
+  if (lobby.isIdle) {
+    lobby.isIdle = false;
+    const { sessions } = lobby;
+    const players = sessions.map(session => ({
+      id: session.playerId,
+      api: session.playerApi,
+    }));
+    try {
+      const gameResult = await playGame(players, lobby.lobbyApi, createDealer());
+      logger.info('game result', gameResult);
+    } catch (error) {
+      logger.error(error);
+    } finally {
+      lobby.isIdle = true;
+    }
+  }
+}
+
+function handlePlayerJoin(socket: WebSocket): void {
+  const session = createNewSession(socket);
+  addSessionToLobby(session);
+  logger.info('player joined lobby', session.playerId);
+  const observeOnStart = session.playerApi.onStartGame().subscribe(onStartGameReceived);
+  handlePlayerLeave(session, observeOnStart);
+}
 
 export default function (socket: WebSocket): void {
-  logger.info('client connected');
-
-  room.push(socket);
-
-  // TODO: check max player in room = 7 here
-  if (socket === room[0]) {
-    // TODO: handle unsubscribe to properly cleanup
-    onStartGame(socket)
-      .pipe(
-        // TODO: skip if game is already running
-        throttleTime(10000),
-      )
-      .subscribe(async () => {
-        const sockets = room;
-        const players = sockets.map((ws: WebSocket) => ({
-          id: generateId(),
-          api: createPlayerApi(ws),
-        }));
-        try {
-          const gameResult = await playGame(players, createRoomApi(sockets), createDealer());
-          logger.info(gameResult);
-        } catch (error) {
-          logger.error(error);
-        } finally {
-          room.forEach(s => s.close());
-          room = [];
-        }
-      });
+  if (lobby.sessions.length > 7) {
+    logger.warn('game lobby already full. connection will be closed.');
+    socket.close();
+  } else if (!lobby.isIdle) {
+    logger.warn('lobby is already in a running game. connection will be closed.');
+    socket.close();
+  } else {
+    handlePlayerJoin(socket);
   }
 }

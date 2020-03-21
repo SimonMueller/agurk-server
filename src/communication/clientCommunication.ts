@@ -1,62 +1,115 @@
 import {
   any, object, string,
 } from '@hapi/joi';
-import { fromEventPattern, Observable } from 'rxjs';
+import {
+  fromEventPattern, Observable, pipe, UnaryFunction,
+} from 'rxjs';
 import {
   filter, map, take, tap, timeout,
 } from 'rxjs/operators';
 import WebSocket from 'ws';
 import { Message } from 'agurk-shared';
 import logger from '../logger';
-import { ExpectedMessage, MessageToBeValidated } from '../types/messageType';
+import { ExpectedMessage, MessageToBeValidated, MessageValidationError } from '../types/messageType';
+import { Result, SuccessResult } from '../types/result';
+import { ERROR_RESULT_KIND, SUCCESS_RESULT_KIND } from '../game/common';
 
-function parseJsonMessage(message: string): object {
+function parseJsonMessage(message: string): Result<MessageValidationError, object> {
   try {
-    return JSON.parse(message);
+    const parsedObject = JSON.parse(message);
+    return {
+      kind: SUCCESS_RESULT_KIND,
+      data: parsedObject,
+    };
   } catch (error) {
-    throw Error('received message is not in proper JSON format');
+    return {
+      kind: ERROR_RESULT_KIND,
+      error: {
+        message: 'received message is not in proper JSON format',
+      },
+    };
   }
 }
 
-function validateMessageFormat(message: object): MessageToBeValidated {
+function validateMessageFormat(message: object): Result<MessageValidationError, MessageToBeValidated> {
   const messageFormatSchema = object().keys({
     name: string().required(),
     data: any(),
   });
 
-  const { error, value } = messageFormatSchema.validate(
-    message as MessageToBeValidated,
-    { stripUnknown: true },
-  );
+  const { error, value } = messageFormatSchema.validate(message as MessageToBeValidated, { stripUnknown: true });
 
   if (error) {
-    logger.error(error);
-    throw Error('validation of received message format failed');
+    logger.warn(error);
   }
 
-  return value;
+  return error
+    ? { kind: ERROR_RESULT_KIND, error: { message: 'validation of received message format failed' } }
+    : { kind: SUCCESS_RESULT_KIND, data: value };
 }
 
-function validateMessageData<T>(expected: ExpectedMessage, actual: MessageToBeValidated): T {
+function validateMessageData<T>(
+  expected: ExpectedMessage,
+  actual: MessageToBeValidated,
+): Result<MessageValidationError, T> {
   const { data } = actual;
   const { dataValidationSchema } = expected;
 
-  const { error, value } = dataValidationSchema.validate(
-    data as T,
-    { stripUnknown: true },
-  );
+  const { error, value } = dataValidationSchema.validate(data as T, { stripUnknown: true });
 
   if (error) {
-    logger.error(error);
-    throw Error('validation of actual received message data failed');
+    logger.warn(error);
   }
-
-  return value;
+  return error
+    ? { kind: ERROR_RESULT_KIND, error: { message: 'validation of received message data failed' } }
+    : { kind: SUCCESS_RESULT_KIND, data: value };
 }
 
-function validateJSONMessage(jsonMessage: string): MessageToBeValidated {
-  const messageObject = parseJsonMessage(jsonMessage);
-  return validateMessageFormat(messageObject);
+function ofSuccessResult<E, T>(result: Result<E, T>): result is SuccessResult<T> {
+  return result.kind === SUCCESS_RESULT_KIND;
+}
+
+function filterMessagesInInvalidFormatOrJson(): UnaryFunction<Observable<string>, Observable<MessageToBeValidated>> {
+  return pipe(
+    map(parseJsonMessage),
+    filter(
+      ofSuccessResult,
+    ),
+    map(parseResult => parseResult.data),
+    map(validateMessageFormat),
+    filter(
+      ofSuccessResult,
+    ),
+    map(validateMessageFormatResult => validateMessageFormatResult.data),
+  );
+}
+
+function filterMessagesNotMatchingExpectedMessage<T>(
+  expectedMessage: ExpectedMessage,
+): UnaryFunction<Observable<MessageToBeValidated>, Observable<T>> {
+  return pipe(
+    map<MessageToBeValidated, Result<MessageValidationError, T>>(
+      actualMessage => validateMessageData(expectedMessage, actualMessage),
+    ),
+
+    filter(ofSuccessResult),
+    map(validateResult => validateResult.data),
+  );
+}
+
+function sendMessageToOpenSocket(socket: WebSocket, jsonMessage: string): Promise<void> {
+  return new Promise((resolve, reject) => {
+    socket.send(jsonMessage, error => (error ? reject(error) : resolve()));
+  });
+}
+
+function send<T>(socket: WebSocket, message: Message): Promise<void> {
+  if (socket.readyState !== WebSocket.OPEN) {
+    return Promise.reject();
+  }
+
+  const jsonMessage = JSON.stringify(message);
+  return sendMessageToOpenSocket(socket, jsonMessage);
 }
 
 export function on<T>(
@@ -67,42 +120,30 @@ export function on<T>(
   const removeHandler = (handler: (message: string) => void): WebSocket => socket.removeListener('message', handler);
   return fromEventPattern<string>(addHandler, removeHandler)
     .pipe(
-      map<string, MessageToBeValidated>(validateJSONMessage),
-      filter<MessageToBeValidated>(actualMessage => actualMessage.name === expectedMessage.name),
-      tap<MessageToBeValidated>(message => logger.info('registered message received', message)),
-      map<MessageToBeValidated, T>(actualMessage => validateMessageData(expectedMessage, actualMessage)),
+      filterMessagesInInvalidFormatOrJson(),
+      filter(actualMessage => actualMessage.name === expectedMessage.name),
+      tap(message => logger.info('registered message received', message)),
+      filterMessagesNotMatchingExpectedMessage<T>(expectedMessage),
     );
 }
 
-function send<T>(socket: WebSocket, message: Message): void {
-  if (socket.readyState === WebSocket.OPEN) {
-    logger.debug('message sent', message);
-    const jsonMessage = JSON.stringify(message);
-    socket.send(jsonMessage);
-  } else {
-    logger.warn('message not sent to closed socket', message);
-  }
-}
-
-// TODO: handle unicast failure
 export function unicast<T extends Message>(
   socket: WebSocket,
   message: T,
 ): void {
-  if (socket.readyState !== WebSocket.OPEN) {
-    throw Error('unicast message cannot be sent to closed socket');
-  }
-
-  logger.info('unicast message sent', message);
-  send(socket, message);
+  send(socket, message)
+    .then(() => logger.info('unicast message sent', message))
+    .catch(() => logger.warn('cannot unicast message to closed socket', message));
 }
 
 export function broadcast<T extends Message>(
   sockets: WebSocket[],
   message: T,
 ): void {
+  sockets.forEach((socket) => {
+    send(socket, message).catch(() => logger.warn('cannot broadcast message to closed socket', message));
+  });
   logger.info('broadcast message sent', message);
-  sockets.forEach(socket => send(socket, message));
 }
 
 export function request<T>(
@@ -111,17 +152,17 @@ export function request<T>(
   expectedMessage: ExpectedMessage,
   timeoutInMilliseconds: number,
 ): Promise<T> {
-  unicast(socket, requesterMessage);
-
-  const addHandler = (handler: (message: string) => void): WebSocket => socket.addListener('message', handler);
-  const removeHandler = (handler: (message: string) => void): WebSocket => socket.removeListener('message', handler);
-  return fromEventPattern<string>(addHandler, removeHandler)
-    .pipe(
-      map<string, MessageToBeValidated>(validateJSONMessage),
-      filter<MessageToBeValidated>(actualMessage => actualMessage.name === expectedMessage.name),
-      tap<MessageToBeValidated>(message => logger.info('requested message received', message)),
-      map<MessageToBeValidated, T>(actualMessage => validateMessageData(expectedMessage, actualMessage)),
-      timeout<T>(timeoutInMilliseconds),
-      take(1),
-    ).toPromise<T>();
+  return send(socket, requesterMessage).then(() => {
+    const addHandler = (handler: (message: string) => void): WebSocket => socket.addListener('message', handler);
+    const removeHandler = (handler: (message: string) => void): WebSocket => socket.removeListener('message', handler);
+    return fromEventPattern<string>(addHandler, removeHandler)
+      .pipe(
+        filterMessagesInInvalidFormatOrJson(),
+        filter(actualMessage => actualMessage.name === expectedMessage.name),
+        tap(message => logger.info('requested message received', message)),
+        filterMessagesNotMatchingExpectedMessage<T>(expectedMessage),
+        timeout(timeoutInMilliseconds),
+        take(1),
+      ).toPromise();
+  });
 }
