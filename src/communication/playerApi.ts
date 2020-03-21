@@ -6,15 +6,15 @@ import {
 import {
   Card, JOKER_CARD_KIND, SUIT_CARD_KIND, Colors, MessageName, Suits,
 } from 'agurk-shared';
-import { Observable } from 'rxjs';
 import { partial } from 'ramda';
+import { Observable } from 'rxjs';
 import { on, request, unicast } from './clientCommunication';
 import { ExpectedMessage } from '../types/messageType';
 import { PlayerApi } from '../types/player';
 
 const requestTimeoutInMillis: number = config.get('server.requestTimeoutInMillis');
 
-export function onStartGame(socket: WebSocket): Observable<void> {
+function onStartGame(socket: WebSocket): Observable<void> {
   const message = {
     name: MessageName.START_GAME,
     dataValidationSchema: any().forbidden(),
@@ -56,6 +56,7 @@ function availableCardsInHand(socket: WebSocket, cards: Card[]): void {
 
 export default function create(socket: WebSocket): PlayerApi {
   return {
+    onStartGame: partial(onStartGame, [socket]),
     isConnected: (): boolean => socket.readyState === WebSocket.OPEN,
     dealCards: partial(dealCards, [socket]),
     requestCards: partial(requestCards, [socket]),
