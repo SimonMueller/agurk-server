@@ -14,6 +14,8 @@ export type MaxPlayerCount = 7;
 
 export type PenaltySumThreshold = 21;
 
+export type ValidCardCountRangeInclusive = [1, 7];
+
 export type CardCountToDeal = 1 | 2 | 3 | 4 | 5 | 6 | 7;
 
 interface FinishedGame {
