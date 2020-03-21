@@ -58,7 +58,7 @@ function createNewSession(socket: WebSocket): PlayerSession {
 }
 
 async function onStartGameReceived(): Promise<void> {
-  if (lobby.isIdle) {
+  if (lobby.isIdle && lobby.sessions.length >= 2 && lobby.sessions.length <= 7) {
     lobby.isIdle = false;
     const { sessions } = lobby;
     const players = sessions.map(session => ({
