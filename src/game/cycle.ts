@@ -3,7 +3,7 @@ import {
   ascend, chain, descend, differenceWith, head, identity, sort,
 } from 'ramda';
 import {
-  PlayerId, Card, Rank, TurnError, ValidatedTurn, cardEquals,
+  PlayerId, Card, Rank, ValidatedTurn, cardEquals, InvalidTurn,
 } from 'agurk-shared';
 import logger from '../logger';
 import { Cycle, CycleState } from '../types/cycle';
@@ -11,8 +11,7 @@ import { Hand, PlayerHands } from '../types/hand';
 import { Player } from '../types/player';
 import { RoomApi } from '../types/room';
 import { RoundState } from '../types/round';
-import { TurnResult } from '../types/turn';
-import { ERROR_RESULT_KIND, mapPlayersToPlayerIds } from './common';
+import { mapPlayersToPlayerIds } from './common';
 import playTurn from './turn';
 
 const TURN_RETRIES_ALLOWED: number = config.get('server.requestRetriesAllowed');
@@ -82,9 +81,8 @@ function filterAvailableCardsFromPlayerHands(
   }, {});
 }
 
-function shouldRetryTurn(turnResult: TurnResult, retriesLeft: number): boolean {
-  return turnResult.kind === ERROR_RESULT_KIND
-    && retriesLeft !== 0;
+function shouldRetryTurn(validatedTurn: ValidatedTurn, retriesLeft: number): boolean {
+  return !validatedTurn.valid && retriesLeft !== 0;
 }
 
 async function playTurnWithRetry(
@@ -92,7 +90,7 @@ async function playTurnWithRetry(
   previousCycleState: CycleState,
   roomApi: RoomApi,
   retriesLeft: number,
-): Promise<TurnResult> {
+): Promise<ValidatedTurn> {
   const turnResult = await playTurn(player, previousCycleState, roomApi);
 
   logger.info(`trying to play turn. ${retriesLeft} retries left...`);
@@ -102,14 +100,14 @@ async function playTurnWithRetry(
     : turnResult;
 }
 
-function addErrorTurnPlayerIdToOutPlayers(previousCycleState: CycleState, errorTurn: TurnError): CycleState {
+function addErrorTurnPlayerIdToOutPlayers(previousCycleState: CycleState, invalidTurn: InvalidTurn): CycleState {
   return {
     ...previousCycleState,
     outPlayers: [
       ...previousCycleState.outPlayers,
       {
-        id: errorTurn.playerId,
-        reason: errorTurn.message,
+        id: invalidTurn.playerId,
+        reason: invalidTurn.invalidReason,
       },
     ],
   };
@@ -125,10 +123,10 @@ function addValidTurnToCycleTurns(previousCycleState: CycleState, turn: Validate
   };
 }
 
-function buildNewCycleState(turnResult: TurnResult, previousCycleState: CycleState): CycleState {
-  return turnResult.kind === ERROR_RESULT_KIND
-    ? addErrorTurnPlayerIdToOutPlayers(previousCycleState, turnResult.error)
-    : addValidTurnToCycleTurns(previousCycleState, turnResult.data);
+function buildNewCycleState(validatedTurn: ValidatedTurn, previousCycleState: CycleState): CycleState {
+  return validatedTurn.valid
+    ? addValidTurnToCycleTurns(previousCycleState, validatedTurn)
+    : addErrorTurnPlayerIdToOutPlayers(previousCycleState, validatedTurn);
 }
 
 async function getCycleStateAfterTurn(
@@ -137,9 +135,9 @@ async function getCycleStateAfterTurn(
   roomApi: RoomApi,
 ): Promise<CycleState> {
   const previousCycleState = await previousCycleStatePromise;
-  const turnResult = await playTurnWithRetry(player, previousCycleState, roomApi, TURN_RETRIES_ALLOWED);
+  const validatedTurn = await playTurnWithRetry(player, previousCycleState, roomApi, TURN_RETRIES_ALLOWED);
 
-  return buildNewCycleState(turnResult, previousCycleState);
+  return buildNewCycleState(validatedTurn, previousCycleState);
 }
 
 function turnsToCycleState(roomApi: RoomApi) {

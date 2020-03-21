@@ -141,7 +141,9 @@ export function validateTurn(turn: Turn, cycleState: CycleState): ValidatedTurn 
     playedCards,
     cyclePlayedCards,
   );
-  return { ...turn, valid };
+  return valid
+    ? { ...turn, valid }
+    : { ...turn, valid, invalidReason: 'player is not following the game rules' };
 }
 
 function isSingleActivePlayer(playerIds: PlayerId[], outPlayers: OutPlayer[]): boolean {

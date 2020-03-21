@@ -1,12 +1,11 @@
 import {
-  createJokerCard, createSuitCard, Colors, Suits, Card, TurnError, ValidatedTurn,
+  createJokerCard, createSuitCard, Colors, Suits, Card,
 } from 'agurk-shared';
 import playTurn from '../../src/game/turn';
 import PlayerFactory from '../factories/player';
 import PlayerIdFactory from '../factories/playerId';
 import createMockedRoomApi from '../mocks/roomApi';
 import TurnFactory from '../factories/turn';
-import { FailedResult, SuccessResult } from '../../src/types/result';
 import { CycleState } from '../../src/types/cycle';
 import { Hand } from '../../src/types/hand';
 
@@ -27,11 +26,10 @@ describe('play turn', () => {
     };
     const mockedRoomApi = createMockedRoomApi();
 
-    const turnResult = await playTurn(player, cycleState, mockedRoomApi) as SuccessResult<ValidatedTurn>;
+    const validatedTurn = await playTurn(player, cycleState, mockedRoomApi);
 
-    expect(turnResult.data).toBeDefined();
-    expect(mockedRoomApi.broadcastPlayerTurn).toHaveBeenCalledWith(turnResult.data);
-    expect(turnResult.data).toEqual({
+    expect(mockedRoomApi.broadcastPlayerTurn).toHaveBeenCalledWith(validatedTurn);
+    expect(validatedTurn).toEqual({
       cards: playedCards,
       playerId: player.id,
       valid: true,
@@ -62,11 +60,10 @@ describe('play turn', () => {
     };
     const mockedRoomApi = createMockedRoomApi();
 
-    const turnResult = await playTurn(player, cycleState, mockedRoomApi) as SuccessResult<ValidatedTurn>;
+    const validatedTurn = await playTurn(player, cycleState, mockedRoomApi);
 
-    expect(turnResult.data).toBeDefined();
-    expect(mockedRoomApi.broadcastPlayerTurn).toHaveBeenCalledWith(turnResult.data);
-    expect(turnResult.data).toEqual({
+    expect(mockedRoomApi.broadcastPlayerTurn).toHaveBeenCalledWith(validatedTurn);
+    expect(validatedTurn).toEqual({
       cards: playedCards,
       playerId: player.id,
       valid: true,
@@ -97,13 +94,14 @@ describe('play turn', () => {
     };
     const mockedRoomApi = createMockedRoomApi();
 
-    const turnResult = await playTurn(player, cycleState, mockedRoomApi) as FailedResult<TurnError>;
+    const validatedTurn = await playTurn(player, cycleState, mockedRoomApi);
 
-    expect(turnResult.error).toBeDefined();
-    expect(mockedRoomApi.broadcastPlayerTurnError).toHaveBeenCalledWith(turnResult.error);
-    expect(turnResult.error).toEqual({
+    expect(mockedRoomApi.broadcastPlayerTurn).toHaveBeenCalledWith(validatedTurn);
+    expect(validatedTurn).toEqual({
+      cards: playedCards,
       playerId: player.id,
-      message: 'player is not following the game rules',
+      valid: false,
+      invalidReason: 'player is not following the game rules',
     });
   });
 
@@ -112,18 +110,19 @@ describe('play turn', () => {
     player.api.requestCards.mockRejectedValueOnce(Error('player error'));
     const mockedRoomApi = createMockedRoomApi();
 
-    const turnResult = await playTurn(player, {
+    const validatedTurn = await playTurn(player, {
       outPlayers: [],
       turns: [],
       playerIds: [],
       hands: {},
-    }, mockedRoomApi) as FailedResult<TurnError>;
+    }, mockedRoomApi);
 
-    expect(turnResult.error).toBeDefined();
-    expect(mockedRoomApi.broadcastPlayerTurnError).toHaveBeenCalledWith(turnResult.error);
-    expect(turnResult.error).toEqual({
+    expect(mockedRoomApi.broadcastPlayerTurn).toHaveBeenCalledWith(validatedTurn);
+    expect(validatedTurn).toEqual({
+      cards: [],
       playerId: player.id,
-      message: 'problem requesting cards from player',
+      valid: false,
+      invalidReason: 'problem requesting cards from player',
     });
   });
 });

@@ -1,18 +1,10 @@
 import WebSocket from 'ws';
 import {
-  Error, MessageName, OutPlayer, Penalty, PlayerId, TurnError, ValidatedTurn,
+  MessageName, OutPlayer, Penalty, PlayerId, ValidatedTurn, Error,
 } from 'agurk-shared';
 import { partial } from 'ramda';
 import { broadcast } from './clientCommunication';
 import { RoomApi } from '../types/room';
-
-function broadcastGameError(sockets: WebSocket[], error: Error): void {
-  const message = {
-    name: MessageName.BROADCAST_GAME_ERROR,
-    data: error,
-  } as const;
-  return broadcast(sockets, message);
-}
 
 function broadcastStartGame(sockets: WebSocket[], players: PlayerId[]): void {
   const message = {
@@ -32,12 +24,18 @@ function broadcastStartPlayerTurn(sockets: WebSocket[], playerId: PlayerId): voi
   return broadcast(sockets, message);
 }
 
-function broadcastEndGame(sockets: WebSocket[], winner: PlayerId): void {
+function broadcastSuccessEndGame(sockets: WebSocket[], winner: PlayerId): void {
   const message = {
     name: MessageName.BROADCAST_END_GAME,
-    data: {
-      winner,
-    },
+    data: { isValid: true, winner },
+  } as const;
+  return broadcast(sockets, message);
+}
+
+function broadcastErrorEndGame(sockets: WebSocket[], error: Error): void {
+  const message = {
+    name: MessageName.BROADCAST_END_GAME,
+    data: { isValid: false, error },
   } as const;
   return broadcast(sockets, message);
 }
@@ -98,14 +96,6 @@ function broadcastPlayerTurn(sockets: WebSocket[], turn: ValidatedTurn): void {
   return broadcast(sockets, message);
 }
 
-function broadcastPlayerTurnError(sockets: WebSocket[], turnError: TurnError): void {
-  const message = {
-    name: MessageName.BROADCAST_PLAYER_TURN_ERROR,
-    data: turnError,
-  } as const;
-  return broadcast(sockets, message);
-}
-
 export default function create(sockets: WebSocket[]): RoomApi {
   return {
     broadcastStartGame: partial(broadcastStartGame, [sockets]),
@@ -115,8 +105,7 @@ export default function create(sockets: WebSocket[]): RoomApi {
     broadcastPlayerTurn: partial(broadcastPlayerTurn, [sockets]),
     broadcastEndCycle: partial(broadcastEndCycle, [sockets]),
     broadcastEndRound: partial(broadcastEndRound, [sockets]),
-    broadcastEndGame: partial(broadcastEndGame, [sockets]),
-    broadcastGameError: partial(broadcastGameError, [sockets]),
-    broadcastPlayerTurnError: partial(broadcastPlayerTurnError, [sockets]),
+    broadcastErrorEndGame: partial(broadcastErrorEndGame, [sockets]),
+    broadcastSuccessEndGame: partial(broadcastSuccessEndGame, [sockets]),
   };
 }

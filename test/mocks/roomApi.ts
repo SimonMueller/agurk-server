@@ -8,7 +8,6 @@ export default (): jest.Mocked<RoomApi> => ({
   broadcastPlayerTurn: jest.fn(),
   broadcastEndCycle: jest.fn(),
   broadcastEndRound: jest.fn(),
-  broadcastEndGame: jest.fn(),
-  broadcastGameError: jest.fn(),
-  broadcastPlayerTurnError: jest.fn(),
+  broadcastSuccessEndGame: jest.fn(),
+  broadcastErrorEndGame: jest.fn(),
 });

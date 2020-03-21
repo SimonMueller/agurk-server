@@ -123,10 +123,10 @@ function createInvalidPlayerCountErrorGameResult(players: Player[]): GameResult 
   };
 }
 
-function broadcastGameResult(winner: PlayerId | undefined, roomApi: RoomApi): void {
-  return winner !== undefined
-    ? roomApi.broadcastEndGame(winner)
-    : roomApi.broadcastGameError({ error: 'no active players left.' });
+function broadcastGameResult(gameResult: GameResult, roomApi: RoomApi): void {
+  return gameResult.kind === SUCCESS_RESULT_KIND
+    ? roomApi.broadcastSuccessEndGame(gameResult.data.winner)
+    : roomApi.broadcastErrorEndGame({ message: gameResult.error.message });
 }
 
 async function playGame(roomApi: RoomApi, players: Player[], dealer: Dealer): Promise<GameResult> {
@@ -137,12 +137,13 @@ async function playGame(roomApi: RoomApi, players: Player[], dealer: Dealer): Pr
 
   const finishedGameState = await iterate(players, initialGameState, roomApi, dealer);
   const winner = chooseGameWinner(dealer.samplePlayerId, finishedGameState);
-
-  broadcastGameResult(winner, roomApi);
-
-  return winner !== undefined
+  const gameResult = winner !== undefined
     ? createValidGameResult(finishedGameState, winner)
     : createNoWinnerErrorGameResult(finishedGameState);
+
+  broadcastGameResult(gameResult, roomApi);
+
+  return gameResult;
 }
 
 export default async function (
