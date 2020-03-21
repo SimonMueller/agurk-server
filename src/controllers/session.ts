@@ -10,7 +10,7 @@ import { generateId } from '../util';
 import { RoomApi } from '../types/room';
 import { PlayerApi } from '../types/player';
 
-// TODO: proper lobby and session handling
+// TODO: consistent naming of room, lobby and session
 const lobby: Lobby = {
   isIdle: true,
   sessions: [],
