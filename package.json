@@ -46,7 +46,7 @@
   },
   "dependencies": {
     "@hapi/joi": "^16.1.8",
-    "agurk-shared": "github:SimonMueller/agurk-shared#semver:4.7",
+    "agurk-shared": "github:SimonMueller/agurk-shared#semver:4.8",
     "body-parser": "^1.19.0",
     "config": "^3.3.0",
     "cors": "^2.8.5",
