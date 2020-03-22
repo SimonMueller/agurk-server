@@ -3,5 +3,10 @@
     "port": "PORT",
     "requestTimeoutInMillis": "REQUEST_TIMEOUT_IN_MILLIS",
     "requestRetriesAllowed": "REQUEST_RETRIES_ALLOWED"
+  },
+  "security": {
+    "authenticationTimeoutInMillis": "AUTHENTICATION_TIMEOUT_IN_MILLIS",
+    "jwtSignSecret": "JWT_SIGN_SECRET",
+    "accessToken": "ACCESS_TOKEN"
   }
 }

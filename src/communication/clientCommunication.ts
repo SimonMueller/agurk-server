@@ -152,6 +152,7 @@ export function request<T>(
   expectedMessage: ExpectedMessage,
   timeoutInMilliseconds: number,
 ): Promise<T> {
+  logger.info('sending request message to socket', requesterMessage);
   return send(socket, requesterMessage).then(() => {
     const addHandler = (handler: (message: string) => void): WebSocket => socket.addListener('message', handler);
     const removeHandler = (handler: (message: string) => void): WebSocket => socket.removeListener('message', handler);

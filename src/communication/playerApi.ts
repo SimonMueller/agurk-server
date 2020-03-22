@@ -12,7 +12,7 @@ import { on, request, unicast } from './clientCommunication';
 import { ExpectedMessage } from '../types/messageType';
 import { PlayerApi } from '../types/player';
 
-const requestTimeoutInMillis: number = config.get('server.requestTimeoutInMillis');
+const REQUEST_TIMEOUT_IN_MILLIS: number = config.get('server.requestTimeoutInMillis');
 
 function onStartGame(socket: WebSocket): Observable<void> {
   const message = {
@@ -43,7 +43,7 @@ function requestCards(socket: WebSocket): Promise<Card[]> {
       kind: string().valid(SUIT_CARD_KIND, JOKER_CARD_KIND).required(),
     }).xor('suit', 'color')).min(1).max(7),
   };
-  return request<Card[]>(socket, requesterMessage, expectedMessage, requestTimeoutInMillis);
+  return request<Card[]>(socket, requesterMessage, expectedMessage, REQUEST_TIMEOUT_IN_MILLIS);
 }
 
 function availableCardsInHand(socket: WebSocket, cards: Card[]): void {

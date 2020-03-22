@@ -48,11 +48,11 @@ function handlePlayerLeave(session: PlayerSession, observeOnStart: Subscription)
   });
 }
 
-function createNewSession(socket: WebSocket): PlayerSession {
+function createNewSession(socket: WebSocket, subject: string): PlayerSession {
   return {
     id: generateId(),
     socket,
-    playerId: generateId(),
+    playerId: subject,
     playerApi: createPlayerApi(socket),
   };
 }
@@ -76,15 +76,15 @@ async function onStartGameReceived(): Promise<void> {
   }
 }
 
-function handlePlayerJoin(socket: WebSocket): void {
-  const session = createNewSession(socket);
+function handlePlayerJoin(socket: WebSocket, subject: string): void {
+  const session = createNewSession(socket, subject);
   addSessionToLobby(session);
   logger.info('player joined lobby', session.playerId);
   const observeOnStart = session.playerApi.onStartGame().subscribe(onStartGameReceived);
   handlePlayerLeave(session, observeOnStart);
 }
 
-export default function (socket: WebSocket): void {
+export default function (socket: WebSocket, subject: string): void {
   if (lobby.sessions.length > 7) {
     logger.warn('game lobby already full. connection will be closed.');
     socket.close();
@@ -92,6 +92,6 @@ export default function (socket: WebSocket): void {
     logger.warn('lobby is already in a running game. connection will be closed.');
     socket.close();
   } else {
-    handlePlayerJoin(socket);
+    handlePlayerJoin(socket, subject);
   }
 }

@@ -2,5 +2,10 @@
   "server": {
     "requestTimeoutInMillis": 250,
     "requestRetriesAllowed": 0
+  },
+  "security": {
+    "authenticationTimeoutInMillis": 1000,
+    "jwtSignSecret": "testsecret",
+    "accessToken": "testtoken"
   }
 }
