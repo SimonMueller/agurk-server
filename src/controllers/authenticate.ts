@@ -2,14 +2,12 @@ import express from 'express';
 import jwt from 'jsonwebtoken';
 import bodyParser from 'body-parser';
 import config from 'config';
-import cors from 'cors';
 
 const SIGN_SECRET: string = config.get('security.jwtSignSecret');
 const ACCESS_TOKEN: string = config.get('security.accessToken');
 
 const router = express.Router();
 
-router.use(cors());
 router.use(bodyParser.json());
 
 router.post('/', (req, res) => {

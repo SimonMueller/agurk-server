@@ -3,6 +3,7 @@ import express from 'express';
 import http from 'http';
 import jwt from 'jsonwebtoken';
 import config from 'config';
+import cors from 'cors';
 import handleAuthenticatedConnection from './controllers/session';
 import authenticate from './controllers/authenticate';
 import logger from './logger';
@@ -15,6 +16,7 @@ export default function (port: number): void {
   const httpServer = http.createServer(app);
   const wsServer = new WebSocket.Server({ server: httpServer });
 
+  app.use(cors());
   app.use('/authenticate', authenticate);
 
   wsServer.on('connection', (socket) => {
