@@ -7,6 +7,6 @@
   "security": {
     "authenticationTimeoutInMillis": 5000,
     "jwtSignSecret": "testsecret",
-    "accessToken": "testtoken"
+    "accessToken": "test"
   }
 }
