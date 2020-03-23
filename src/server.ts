@@ -4,6 +4,7 @@ import http from 'http';
 import jwt from 'jsonwebtoken';
 import config from 'config';
 import cors from 'cors';
+import { JwtPayload } from 'agurk-shared';
 import handleAuthenticatedConnection from './controllers/session';
 import authenticate from './controllers/authenticate';
 import logger from './logger';
@@ -22,7 +23,7 @@ export default function (port: number): void {
   wsServer.on('connection', (socket) => {
     requestAuthentication(socket)
       .then((unverifiedJwt) => {
-        const verifiedJwt = jwt.verify(unverifiedJwt, SIGN_SECRET) as { sub: string };
+        const verifiedJwt = jwt.verify(unverifiedJwt, SIGN_SECRET) as JwtPayload;
         return verifiedJwt.sub;
       })
       .then((subject) => {
