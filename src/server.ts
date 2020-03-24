@@ -3,22 +3,26 @@ import express from 'express';
 import http from 'http';
 import jwt from 'jsonwebtoken';
 import config from 'config';
+import helmet from 'helmet';
 import cors from 'cors';
 import { JwtPayload } from 'agurk-shared';
 import handleAuthenticatedConnection from './controllers/session';
-import authenticate from './controllers/authenticate';
+import authentication from './controllers/authentication';
 import logger from './logger';
 import requestAuthentication from './communication/authenticationApi';
 
 const SIGN_SECRET: string = config.get('security.jwtSignSecret');
 
-export default function (port: number): void {
+export default function (): http.Server {
   const app = express();
   const httpServer = http.createServer(app);
   const wsServer = new WebSocket.Server({ server: httpServer });
 
   app.use(cors());
-  app.use('/authenticate', authenticate);
+  app.use(helmet());
+  app.use(express.json());
+
+  app.use('/authenticate', authentication);
 
   wsServer.on('connection', (socket) => {
     requestAuthentication(socket)
@@ -37,8 +41,5 @@ export default function (port: number): void {
       });
   });
 
-  httpServer.listen(port, () => {
-    const address = httpServer.address();
-    logger.info(`server listening on ${JSON.stringify(address)}`);
-  });
+  return httpServer;
 }

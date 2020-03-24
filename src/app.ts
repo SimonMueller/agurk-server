@@ -1,9 +1,13 @@
 import config from 'config';
-import startServer from './server';
+import createServer from './server';
 import logger from './logger';
 
 try {
-  startServer(config.get('server.port'));
+  const httpServer = createServer();
+  httpServer.listen(config.get('server.port'), () => {
+    const address = httpServer.address();
+    logger.info(`server listening on ${JSON.stringify(address)}`);
+  });
 } catch (error) {
   logger.error(error);
 }
