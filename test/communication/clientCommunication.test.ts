@@ -8,7 +8,7 @@ import {
 } from '../../src/communication/clientCommunication';
 import createWebsocket from '../mocks/websocket';
 import { ExpectedMessage } from '../../src/types/messageType';
-import flushAllPromises from './promiseHelper';
+import flushAllPromises from '../promiseHelper';
 
 function createExpectedMessageWithoutValidation(messageName: MessageName): ExpectedMessage {
   return {

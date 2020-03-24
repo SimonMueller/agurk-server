@@ -12,4 +12,5 @@ export interface RoomApi {
   readonly broadcastEndRound: (penalties: Penalty[], outPlayers: OutPlayer[], winner?: PlayerId) => void;
   readonly broadcastSuccessEndGame: (winner: PlayerId) => void;
   readonly broadcastErrorEndGame: (error: Error) => void;
+  readonly broadcastLobbyPlayers: (players: PlayerId[]) => void;
 }

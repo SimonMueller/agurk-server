@@ -1,6 +1,6 @@
 {
   "server": {
-    "requestTimeoutInMillis": 250,
+    "requestTimeoutInMillis": 1000,
     "requestRetriesAllowed": 0
   },
   "security": {

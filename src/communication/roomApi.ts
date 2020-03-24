@@ -96,6 +96,14 @@ function broadcastPlayerTurn(sockets: WebSocket[], turn: ValidatedTurn): void {
   return broadcast(sockets, message);
 }
 
+function broadcastLobbyPlayers(sockets: WebSocket[], players: PlayerId[]): void {
+  const message = {
+    name: MessageName.BROADCAST_LOBBY_PLAYERS,
+    data: players,
+  } as const;
+  return broadcast(sockets, message);
+}
+
 export default function create(sockets: WebSocket[]): RoomApi {
   return {
     broadcastStartGame: partial(broadcastStartGame, [sockets]),
@@ -107,5 +115,6 @@ export default function create(sockets: WebSocket[]): RoomApi {
     broadcastEndRound: partial(broadcastEndRound, [sockets]),
     broadcastErrorEndGame: partial(broadcastErrorEndGame, [sockets]),
     broadcastSuccessEndGame: partial(broadcastSuccessEndGame, [sockets]),
+    broadcastLobbyPlayers: partial(broadcastLobbyPlayers, [sockets]),
   };
 }

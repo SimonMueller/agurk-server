@@ -34,7 +34,6 @@ export default function (): http.Server {
         logger.info(`connection authenticated for subject '${subject}'. proceeding to lobby.`);
         handleAuthenticatedConnection(socket, subject);
       })
-      .catch(error => logger.error(error))
       .catch(() => {
         logger.warn('authentication for connection failed. closing connection.');
         socket.close();

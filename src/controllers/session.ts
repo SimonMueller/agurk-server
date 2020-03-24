@@ -33,11 +33,13 @@ interface Lobby {
 function addSessionToLobby(sessionToAdd: PlayerSession): void {
   lobby.sessions.push(sessionToAdd);
   lobby.lobbyApi = createRoomApi(lobby.sessions.map(session => session.socket));
+  lobby.lobbyApi.broadcastLobbyPlayers(lobby.sessions.map(session => session.playerId));
 }
 
 function removeSessionFromLobby(sessionToRemove: PlayerSession): void {
   lobby.sessions = lobby.sessions.filter(session => sessionToRemove.id !== session.id);
   lobby.lobbyApi = createRoomApi(lobby.sessions.map(session => session.socket));
+  lobby.lobbyApi.broadcastLobbyPlayers(lobby.sessions.map(session => session.playerId));
 }
 
 function handlePlayerLeave(session: PlayerSession, observeOnStart: Subscription): void {

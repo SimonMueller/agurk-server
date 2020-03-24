@@ -3,7 +3,7 @@ import {
 } from 'agurk-shared';
 import createPlayerApi from '../../src/communication/playerApi';
 import createWebsocket from '../mocks/websocket';
-import flushAllPromises from './promiseHelper';
+import flushAllPromises from '../promiseHelper';
 
 describe('request cards and expect response', () => {
   test('with valid type and data', async () => {
