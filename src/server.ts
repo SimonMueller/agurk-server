@@ -18,8 +18,10 @@ export default function (): http.Server {
   const httpServer = http.createServer(app);
   const wsServer = new WebSocket.Server({ server: httpServer });
 
+  app.use(helmet({
+    contentSecurityPolicy: { directives: { defaultSrc: ["'self'"] } },
+  }));
   app.use(cors());
-  app.use(helmet());
   app.use(express.json());
 
   app.use('/authenticate', authentication);
