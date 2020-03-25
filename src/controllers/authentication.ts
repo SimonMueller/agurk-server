@@ -2,6 +2,7 @@ import express from 'express';
 import jwt from 'jsonwebtoken';
 import config from 'config';
 import emojis from 'emojis-list';
+import { AuthenticationBody } from 'agurk-shared';
 
 const SIGN_SECRET: string = config.get('security.jwtSignSecret');
 const ACCESS_TOKEN: string = config.get('security.accessToken');
@@ -13,7 +14,7 @@ function getRandomEmoji(): string {
 }
 
 router.post('/', (req, res) => {
-  const { name, token } = req.body;
+  const { name, token }: AuthenticationBody = req.body;
 
   if (!name || !token) {
     return res.sendStatus(400);
