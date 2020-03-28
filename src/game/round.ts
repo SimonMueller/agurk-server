@@ -2,6 +2,7 @@ import { chain, last, partial } from 'ramda';
 import {
   Card, Penalty, PlayerId, ValidatedTurn,
 } from 'agurk-shared';
+import config from 'config';
 import { Dealer } from '../types/dealer';
 import { Player } from '../types/player';
 import { GameState } from '../types/game';
@@ -14,6 +15,9 @@ import {
 import {
   findActivePlayers, findPenaltiesFromRounds, mapPlayersToPlayerIds, rotatePlayersToPlayerId,
 } from './common';
+import { delay } from '../util';
+
+const DELAY_AFTER_CYCLE_IN_MILLIS: number = config.get('server.delayAfterCycleInMillis');
 
 const createPenaltyFor = (playerId: PlayerId, card: Card): Penalty => ({ card, playerId });
 
@@ -44,7 +48,7 @@ async function iterate(
   const orderedPlayers = rotatePlayersToPlayerId(players, startingPlayerId);
   const orderedActivePlayers = findActivePlayers(roundState.playerIds, roundState.outPlayers, orderedPlayers);
 
-  const cycle = await playCycle(orderedActivePlayers, roundState, roomApi);
+  const cycle = await delay(playCycle(orderedActivePlayers, roundState, roomApi), DELAY_AFTER_CYCLE_IN_MILLIS);
 
   const newRoundState = {
     ...roundState,

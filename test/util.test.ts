@@ -1,4 +1,5 @@
-import { rotate } from '../src/util';
+import { rotate, delay } from '../src/util';
+import flushAllPromises from './promiseHelper';
 
 describe('rotate n times (n > 0 = left rotate, n < 0 = right rotate)', () => {
   test('1 time with non empty array', () => {
@@ -43,5 +44,39 @@ describe('rotate n times (n > 0 = left rotate, n < 0 = right rotate)', () => {
 
   test('0 times with empty array', () => {
     expect(rotate([], 0)).toEqual([]);
+  });
+});
+
+describe('delay promise)', () => {
+  beforeAll(() => jest.useFakeTimers());
+  afterAll(() => jest.useRealTimers());
+
+  test('resolves with original value', async () => {
+    const delayedPromise = delay(Promise.resolve('test'), 1000);
+    await flushAllPromises();
+    jest.runAllTimers();
+
+    await expect(delayedPromise).resolves.toBe('test');
+  });
+
+  test('does not resolve before delay', async () => {
+    const callback = jest.fn();
+    delay(Promise.resolve('test'), 1000).then(callback);
+    await flushAllPromises();
+
+    jest.advanceTimersByTime(750);
+    await flushAllPromises();
+    expect(callback).not.toHaveBeenCalled();
+
+    jest.advanceTimersByTime(250);
+    await flushAllPromises();
+    expect(callback).toHaveBeenCalled();
+  });
+
+  test('rejects on error in delayed promise', async () => {
+    const delayedPromise = delay(Promise.reject(Error('error')), 1000);
+    jest.runAllTimers();
+
+    await expect(delayedPromise).rejects.toThrow('error');
   });
 });
