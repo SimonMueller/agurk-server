@@ -30,11 +30,12 @@ function dealCards(socket: WebSocket, cards: Card[]): void {
   return unicast(socket, message);
 }
 
-function requestCards(socket: WebSocket): Promise<Card[]> {
+function requestCards(socket: WebSocket, retriesLeft: number): Promise<Card[]> {
   const requesterMessage = {
     name: MessageName.REQUEST_CARDS,
     data: {
       timeoutInMillis: REQUEST_TIMEOUT_IN_MILLIS,
+      retriesLeft,
     },
   } as const;
   const expectedMessage: ExpectedMessage = {

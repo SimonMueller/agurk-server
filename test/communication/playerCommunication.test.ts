@@ -10,7 +10,7 @@ describe('request cards and expect response', () => {
     const socket = createWebsocket(1);
     const cards = [createSuitCard(10, Suits.DIAMONDS)];
     const playerApi = createPlayerApi(socket);
-    const resultPromise = playerApi.requestCards();
+    const resultPromise = playerApi.requestCards(0);
     await flushAllPromises();
 
     socket.emit('message', JSON.stringify({
@@ -34,7 +34,7 @@ describe('request cards and expect response', () => {
       createSuitCard(7, Suits.CLUBS),
     ];
     const playerApi = createPlayerApi(socket);
-    const resultPromise = playerApi.requestCards();
+    const resultPromise = playerApi.requestCards(0);
     await flushAllPromises();
 
     socket.emit('message', JSON.stringify({
@@ -50,7 +50,7 @@ describe('request cards and expect response', () => {
     const socket = createWebsocket();
     const cards: Card[] = [];
     const playerApi = createPlayerApi(socket);
-    const resultPromise = playerApi.requestCards();
+    const resultPromise = playerApi.requestCards(0);
     await flushAllPromises();
 
     socket.emit('message', JSON.stringify({
@@ -69,7 +69,7 @@ describe('request cards and expect response', () => {
       createJokerCard(Colors.BLACK),
     ];
     const playerApi = createPlayerApi(socket);
-    const resultPromise = playerApi.requestCards();
+    const resultPromise = playerApi.requestCards(0);
     await flushAllPromises();
 
     socket.emit('message', JSON.stringify({
@@ -84,7 +84,7 @@ describe('request cards and expect response', () => {
     const socket = createWebsocket();
     const cards = [createSuitCard(2, Suits.CLUBS)];
     const playerApi = createPlayerApi(socket);
-    const resultPromise = playerApi.requestCards();
+    const resultPromise = playerApi.requestCards(0);
     await flushAllPromises();
 
     socket.emit('message', JSON.stringify({
@@ -99,7 +99,7 @@ describe('request cards and expect response', () => {
     const socket = createWebsocket();
     const cards = [{ rank: 12, color: Colors.WHITE, suit: Suits.CLUBS }];
     const playerApi = createPlayerApi(socket);
-    const resultPromise = playerApi.requestCards();
+    const resultPromise = playerApi.requestCards(0);
 
     socket.emit('message', JSON.stringify({
       name: MessageName.PLAY_CARDS,

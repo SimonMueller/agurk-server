@@ -7,9 +7,8 @@ export function rotate <T>(array: T[], count: number): T[] {
   return [...array.slice(index), ...array.slice(0, index)];
 }
 
-export async function delay<T>(promise: Promise<T>, delayInMilis: number): Promise<T> {
+export async function delay<T>(value: T, delayInMilis: number): Promise<T> {
   try {
-    const value = await promise;
     return new Promise<T>(resolve => setTimeout(() => resolve(value), delayInMilis));
   } catch (error) {
     return Promise.reject(error);

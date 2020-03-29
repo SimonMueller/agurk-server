@@ -26,7 +26,7 @@ describe('play turn', () => {
     };
     const mockedRoomApi = createMockedRoomApi();
 
-    const validatedTurn = await playTurn(player, cycleState, mockedRoomApi);
+    const validatedTurn = await playTurn(player, cycleState, mockedRoomApi, 0);
 
     expect(mockedRoomApi.broadcastPlayerTurn).toHaveBeenCalledWith(validatedTurn);
     expect(validatedTurn).toEqual({
@@ -60,7 +60,7 @@ describe('play turn', () => {
     };
     const mockedRoomApi = createMockedRoomApi();
 
-    const validatedTurn = await playTurn(player, cycleState, mockedRoomApi);
+    const validatedTurn = await playTurn(player, cycleState, mockedRoomApi, 0);
 
     expect(mockedRoomApi.broadcastPlayerTurn).toHaveBeenCalledWith(validatedTurn);
     expect(validatedTurn).toEqual({
@@ -94,7 +94,7 @@ describe('play turn', () => {
     };
     const mockedRoomApi = createMockedRoomApi();
 
-    const validatedTurn = await playTurn(player, cycleState, mockedRoomApi);
+    const validatedTurn = await playTurn(player, cycleState, mockedRoomApi, 0);
 
     expect(mockedRoomApi.broadcastPlayerTurn).toHaveBeenCalledWith(validatedTurn);
     expect(validatedTurn).toEqual({
@@ -115,7 +115,7 @@ describe('play turn', () => {
       turns: [],
       playerIds: [],
       hands: {},
-    }, mockedRoomApi);
+    }, mockedRoomApi, 0);
 
     expect(mockedRoomApi.broadcastPlayerTurn).toHaveBeenCalledWith(validatedTurn);
     expect(validatedTurn).toEqual({

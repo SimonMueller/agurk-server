@@ -5,7 +5,6 @@ import {
 import {
   PlayerId, Card, Rank, ValidatedTurn, cardEquals, InvalidTurn,
 } from 'agurk-shared';
-import logger from '../logger';
 import { Cycle, CycleState } from '../types/cycle';
 import { Hand, PlayerHands } from '../types/hand';
 import { Player } from '../types/player';
@@ -13,8 +12,10 @@ import { RoomApi } from '../types/room';
 import { RoundState } from '../types/round';
 import { mapPlayersToPlayerIds } from './common';
 import playTurn from './turn';
+import { delay } from '../util';
 
 const TURN_RETRIES_ALLOWED: number = config.get('server.requestRetriesAllowed');
+const DELAY_AFTER_CYCLE_IN_MILLIS: number = config.get('server.delayAfterCycleInMillis');
 
 const mapCardRank = (card: Card): Rank => card.rank;
 
@@ -91,9 +92,7 @@ async function playTurnWithRetry(
   roomApi: RoomApi,
   retriesLeft: number,
 ): Promise<ValidatedTurn> {
-  const turnResult = await playTurn(player, previousCycleState, roomApi);
-
-  logger.info(`trying to play turn. ${retriesLeft} retries left...`);
+  const turnResult = await playTurn(player, previousCycleState, roomApi, retriesLeft);
 
   return shouldRetryTurn(turnResult, retriesLeft)
     ? playTurnWithRetry(player, previousCycleState, roomApi, retriesLeft - 1)
@@ -182,11 +181,11 @@ export default async function (
   const lowestTurns = findLowestRankTurns(turns);
   const highestTurnPlayers = highestTurns.map(turn => turn.playerId);
 
-  roomApi.broadcastEndCycle(cycleState.outPlayers, highestTurnPlayers);
+  roomApi.broadcastEndCycle(cycleState.outPlayers, highestTurnPlayers, DELAY_AFTER_CYCLE_IN_MILLIS);
 
-  return {
+  return delay({
     ...cycleState,
     highestTurns,
     lowestTurns,
-  };
+  }, DELAY_AFTER_CYCLE_IN_MILLIS);
 }

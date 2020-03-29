@@ -203,7 +203,7 @@ describe('send request message and expect response', () => {
   const REQUEST_TIMEOUT_IN_MILILIS: number = config.get('server.requestTimeoutInMillis');
   const REQUESTER_MESSAGE_TYPE = {
     name: MessageName.REQUEST_CARDS,
-    data: { timeoutInMillis: REQUEST_TIMEOUT_IN_MILILIS },
+    data: { timeoutInMillis: REQUEST_TIMEOUT_IN_MILILIS, retriesLeft: 1 },
   } as const;
   const EXPECTED_MESSAGE_TYPE = {
     name: MessageName.PLAY_CARDS,

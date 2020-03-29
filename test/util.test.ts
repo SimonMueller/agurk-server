@@ -52,7 +52,7 @@ describe('delay promise)', () => {
   afterAll(() => jest.useRealTimers());
 
   test('resolves with original value', async () => {
-    const delayedPromise = delay(Promise.resolve('test'), 1000);
+    const delayedPromise = delay('test', 1000);
     await flushAllPromises();
     jest.runAllTimers();
 
@@ -61,8 +61,7 @@ describe('delay promise)', () => {
 
   test('does not resolve before delay', async () => {
     const callback = jest.fn();
-    delay(Promise.resolve('test'), 1000).then(callback);
-    await flushAllPromises();
+    delay('test', 1000).then(callback);
 
     jest.advanceTimersByTime(750);
     await flushAllPromises();
@@ -71,12 +70,5 @@ describe('delay promise)', () => {
     jest.advanceTimersByTime(250);
     await flushAllPromises();
     expect(callback).toHaveBeenCalled();
-  });
-
-  test('rejects on error in delayed promise', async () => {
-    const delayedPromise = delay(Promise.reject(Error('error')), 1000);
-    jest.runAllTimers();
-
-    await expect(delayedPromise).rejects.toThrow('error');
   });
 });

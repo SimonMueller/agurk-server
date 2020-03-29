@@ -9,10 +9,10 @@ import logger from '../logger';
 import { validateTurn } from './rules';
 import { ERROR_RESULT_KIND, SUCCESS_RESULT_KIND } from './common';
 
-async function requestCards(player: Player): Promise<Result<Error, Card[]>> {
+async function requestCards(player: Player, retriesLeft: number): Promise<Result<Error, Card[]>> {
   if (player.api.isConnected()) {
     try {
-      const cards = await player.api.requestCards();
+      const cards = await player.api.requestCards(retriesLeft);
       return { kind: SUCCESS_RESULT_KIND, data: cards };
     } catch (error) {
       logger.error(error.message);
@@ -47,12 +47,13 @@ export default async function (
   player: Player,
   cycleState: CycleState,
   roomApi: RoomApi,
+  retriesLeft: number,
 ): Promise<ValidatedTurn> {
   const { id: playerId } = player;
 
   roomApi.broadcastStartPlayerTurn(playerId);
 
-  const playedCardsResult = await requestCards(player);
+  const playedCardsResult = await requestCards(player, retriesLeft);
 
   const validatedTurn = playedCardsResult.kind === ERROR_RESULT_KIND
     ? createInvalidTurnWithNoCardsPlayed(playerId)

@@ -67,12 +67,18 @@ function broadcastStartRound(sockets: WebSocket[], players: PlayerId[]): void {
   return broadcast(sockets, message);
 }
 
-function broadcastEndCycle(sockets: WebSocket[], outPlayers: OutPlayer[], highestTurnPlayers: PlayerId[]): void {
+function broadcastEndCycle(
+  sockets: WebSocket[],
+  outPlayers: OutPlayer[],
+  highestTurnPlayers: PlayerId[],
+  delayAfterEndInMillis: number,
+): void {
   const message = {
     name: MessageName.BROADCAST_END_CYCLE,
     data: {
       outPlayers,
       highestTurnPlayers,
+      delayAfterEndInMillis,
     },
   } as const;
   return broadcast(sockets, message);
