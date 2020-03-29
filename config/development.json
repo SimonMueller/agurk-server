@@ -3,7 +3,8 @@
     "port": 3001,
     "requestTimeoutInMillis": 10000,
     "requestRetriesAllowed": 1,
-    "delayAfterCycleInMillis": 5000
+    "delayAfterCycleInMillis": 5000,
+    "pingIntervalInMillis": 50000
   },
   "security": {
     "authenticationTimeoutInMillis": 5000,

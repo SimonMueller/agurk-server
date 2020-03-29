@@ -1,6 +1,7 @@
 import WebSocket from 'ws';
 import { PlayerId } from 'agurk-shared';
 import { Subscription } from 'rxjs';
+import config from 'config';
 import logger from '../logger';
 import createPlayerApi from '../communication/playerApi';
 import createRoomApi from '../communication/roomApi';
@@ -9,6 +10,8 @@ import createDealer from '../game/dealer';
 import { generateId } from '../util';
 import { RoomApi } from '../types/room';
 import { PlayerApi } from '../types/player';
+
+const PING_INTERVAL_IN_MILLIS: number = config.get('server.pingIntervalInMillis');
 
 // TODO: consistent naming of room, lobby and session
 const lobby: Lobby = {
@@ -78,8 +81,17 @@ async function onStartGameReceived(): Promise<void> {
   }
 }
 
+function handleKeepAlive(session: PlayerSession): void {
+  const interval = setInterval(() => {
+    logger.info(`sending ping to ${session.playerId}`);
+    session.socket.ping();
+  }, PING_INTERVAL_IN_MILLIS);
+  session.socket.once('close', () => clearInterval(interval));
+}
+
 function handlePlayerJoin(socket: WebSocket, subject: string): void {
   const session = createNewSession(socket, subject);
+  handleKeepAlive(session);
   addSessionToLobby(session);
   logger.info('player joined lobby', session.playerId);
   const observeOnStart = session.playerApi.onStartGame().subscribe(onStartGameReceived);

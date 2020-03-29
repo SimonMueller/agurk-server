@@ -2,7 +2,8 @@
   "server": {
     "requestTimeoutInMillis": 1000,
     "requestRetriesAllowed": 0,
-    "delayAfterCycleInMillis": 0
+    "delayAfterCycleInMillis": 0,
+    "pingIntervalInMillis": 1000
   },
   "security": {
     "authenticationTimeoutInMillis": 1000,
