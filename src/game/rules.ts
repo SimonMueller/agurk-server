@@ -143,7 +143,7 @@ export function validateTurn(turn: Turn, cycleState: CycleState): ValidatedTurn 
   );
   return valid
     ? { ...turn, valid }
-    : { ...turn, valid, invalidReason: 'player is not following the game rules' };
+    : { ...turn, valid, invalidReason: 'not following the game rules' };
 }
 
 function isSingleActivePlayer(playerIds: PlayerId[], outPlayers: OutPlayer[]): boolean {

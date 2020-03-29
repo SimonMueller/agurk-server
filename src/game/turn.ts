@@ -37,7 +37,7 @@ function validatePlayedCardsInTurn(
 
 function createInvalidTurnWithNoCardsPlayed(playerId: string): InvalidTurn {
   return {
-    playerId, cards: [], valid: false, invalidReason: 'problem requesting cards from player',
+    playerId, cards: [], valid: false, invalidReason: 'problem requesting cards',
   };
 }
 
