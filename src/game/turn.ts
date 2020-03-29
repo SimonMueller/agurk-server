@@ -1,4 +1,6 @@
-import { Card, PlayerId, ValidatedTurn } from 'agurk-shared';
+import {
+  Card, InvalidTurn, PlayerId, ValidatedTurn,
+} from 'agurk-shared';
 import { Result } from '../types/result';
 import { RoomApi } from '../types/room';
 import { Player } from '../types/player';
@@ -33,7 +35,7 @@ function validatePlayedCardsInTurn(
   return validateTurn(turn, cycleState);
 }
 
-function createInvalidTurnWithNoCardsPlayed(playerId: string): ValidatedTurn {
+function createInvalidTurnWithNoCardsPlayed(playerId: string): InvalidTurn {
   return {
     playerId, cards: [], valid: false, invalidReason: 'problem requesting cards from player',
   };
