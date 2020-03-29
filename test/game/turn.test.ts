@@ -101,7 +101,7 @@ describe('play turn', () => {
       cards: playedCards,
       playerId: player.id,
       valid: false,
-      invalidReason: 'player is not following the game rules',
+      invalidReason: 'not following the game rules',
     });
   });
 
@@ -122,7 +122,7 @@ describe('play turn', () => {
       cards: [],
       playerId: player.id,
       valid: false,
-      invalidReason: 'problem requesting cards from player',
+      invalidReason: 'problem requesting cards',
     });
   });
 });

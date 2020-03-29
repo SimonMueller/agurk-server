@@ -86,11 +86,11 @@ describe('play cycle', () => {
     await expect(cycle.outPlayers).toEqual([
       {
         id: player1.id,
-        reason: 'player is not following the game rules',
+        reason: 'not following the game rules',
       },
       {
         id: player2.id,
-        reason: 'player is not following the game rules',
+        reason: 'not following the game rules',
       },
     ]);
   });

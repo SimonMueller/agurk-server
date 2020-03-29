@@ -153,7 +153,7 @@ describe('play game', () => {
     expect(gameResult.data).toBeDefined();
     expect(gameResult.data.outPlayers).toEqual([{
       id: player2.id,
-      reason: 'problem requesting cards from player',
+      reason: 'problem requesting cards',
     }]);
   });
 
