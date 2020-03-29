@@ -15,14 +15,16 @@ async function requestCards(player: Player): Promise<Result<Error, Card[]>> {
       const cards = await player.api.requestCards();
       return { kind: SUCCESS_RESULT_KIND, data: cards };
     } catch (error) {
-      logger.error(error);
+      logger.error(error.message);
       return { kind: ERROR_RESULT_KIND, error };
     }
   }
 
+  const error = Error('cannot request cards from disconnected player');
+  logger.error(error.message);
   return {
     kind: ERROR_RESULT_KIND,
-    error: Error('cannot request cards from disconnected player'),
+    error,
   };
 }
 
@@ -37,7 +39,7 @@ function validatePlayedCardsInTurn(
 
 function createInvalidTurnWithNoCardsPlayed(playerId: string): InvalidTurn {
   return {
-    playerId, cards: [], valid: false, invalidReason: 'problem requesting cards',
+    playerId, cards: [], valid: false, invalidReason: 'no cards played',
   };
 }
 

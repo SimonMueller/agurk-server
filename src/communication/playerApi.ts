@@ -33,6 +33,9 @@ function dealCards(socket: WebSocket, cards: Card[]): void {
 function requestCards(socket: WebSocket): Promise<Card[]> {
   const requesterMessage = {
     name: MessageName.REQUEST_CARDS,
+    data: {
+      timeoutInMillis: REQUEST_TIMEOUT_IN_MILLIS,
+    },
   } as const;
   const expectedMessage: ExpectedMessage = {
     name: MessageName.PLAY_CARDS,

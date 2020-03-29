@@ -201,7 +201,10 @@ describe('send broadcast message', () => {
 
 describe('send request message and expect response', () => {
   const REQUEST_TIMEOUT_IN_MILILIS: number = config.get('server.requestTimeoutInMillis');
-  const REQUESTER_MESSAGE_TYPE = { name: MessageName.REQUEST_CARDS } as const;
+  const REQUESTER_MESSAGE_TYPE = {
+    name: MessageName.REQUEST_CARDS,
+    data: { timeoutInMillis: REQUEST_TIMEOUT_IN_MILILIS },
+  } as const;
   const EXPECTED_MESSAGE_TYPE = {
     name: MessageName.PLAY_CARDS,
     dataValidationSchema: Joi.array().length(1),

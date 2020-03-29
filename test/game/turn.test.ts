@@ -122,7 +122,7 @@ describe('play turn', () => {
       cards: [],
       playerId: player.id,
       valid: false,
-      invalidReason: 'problem requesting cards',
+      invalidReason: 'no cards played',
     });
   });
 });
