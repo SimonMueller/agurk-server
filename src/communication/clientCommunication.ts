@@ -154,8 +154,11 @@ export function request<T>(
 ): Promise<T> {
   logger.info('sending request message to socket', requesterMessage);
 
-  const socketClose = new Promise<T>((resolve, reject) => socket
-    .once('close', () => reject(Error('socket connection closed while requesting cards'))));
+  function rejectOnSocketClose(reject: (error: Error) => void): void {
+    reject(Error('socket connection closed while requesting cards'));
+  }
+
+  const socketClose = new Promise<T>((resolve, reject) => socket.once('close', () => rejectOnSocketClose(reject)));
 
   const requestResult = send(socket, requesterMessage).then(() => {
     const addHandler = (handler: (message: string) => void): WebSocket => socket.addListener('message', handler);
@@ -168,6 +171,7 @@ export function request<T>(
         filterMessagesNotMatchingExpectedMessage<T>(expectedMessage),
         timeout(timeoutInMilliseconds),
         take(1),
+        tap(() => socket.removeListener('close', rejectOnSocketClose)),
       ).toPromise();
   });
 
