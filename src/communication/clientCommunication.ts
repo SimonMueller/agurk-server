@@ -153,7 +153,11 @@ export function request<T>(
   timeoutInMilliseconds: number,
 ): Promise<T> {
   logger.info('sending request message to socket', requesterMessage);
-  return send(socket, requesterMessage).then(() => {
+
+  const socketClose = new Promise<T>((resolve, reject) => socket
+    .once('close', () => reject(Error('socket connection closed while requesting cards'))));
+
+  const requestResult = send(socket, requesterMessage).then(() => {
     const addHandler = (handler: (message: string) => void): WebSocket => socket.addListener('message', handler);
     const removeHandler = (handler: (message: string) => void): WebSocket => socket.removeListener('message', handler);
     return fromEventPattern<string>(addHandler, removeHandler)
@@ -166,4 +170,6 @@ export function request<T>(
         take(1),
       ).toPromise();
   });
+
+  return Promise.race<T>([socketClose, requestResult]);
 }

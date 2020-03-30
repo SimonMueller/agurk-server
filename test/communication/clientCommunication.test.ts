@@ -339,4 +339,19 @@ describe('send request message and expect response', () => {
 
     await expect(resultPromise).resolves.toEqual([createSuitCard(3, Suits.SPADES)]);
   });
+
+  test('rejects if socket close while requesting', async () => {
+    const socket = createWebsocket();
+
+    const resultPromise = request(
+      socket,
+      REQUESTER_MESSAGE_TYPE,
+      EXPECTED_MESSAGE_TYPE,
+      REQUEST_TIMEOUT_IN_MILILIS,
+    );
+
+    socket.emit('close');
+
+    await expect(resultPromise).rejects.toThrow('closed while requesting cards');
+  });
 });
