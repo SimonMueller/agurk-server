@@ -46,7 +46,7 @@ function removeSessionFromLobby(sessionToRemove: PlayerSession): void {
 }
 
 function handlePlayerLeave(session: PlayerSession, observeOnStart: Subscription): void {
-  session.socket.on('close', () => {
+  session.socket.once('close', () => {
     logger.info('player left lobby', session.playerId);
     observeOnStart.unsubscribe();
     removeSessionFromLobby(session);
