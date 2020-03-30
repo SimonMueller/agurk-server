@@ -125,4 +125,33 @@ describe('play turn', () => {
       invalidReason: 'no cards played',
     });
   });
+
+  test('valid turn after retry', async () => {
+    const playerIds = PlayerIdFactory.buildList(2);
+    const invalidPlayedCards: Card[] = [createJokerCard(Colors.BLACK)];
+    const validPlayedCards: Card[] = [createSuitCard(3, Suits.SPADES)];
+    const playerHand: Hand = [createSuitCard(3, Suits.SPADES)];
+    const player = PlayerFactory.build({ id: playerIds[0] });
+    const cycleState: CycleState = {
+      turns: [],
+      hands: {
+        [player.id]: playerHand,
+      },
+      outPlayers: [],
+      playerIds,
+    };
+    const mockedRoomApi = createMockedRoomApi();
+
+    player.api.requestCards.mockResolvedValueOnce(invalidPlayedCards);
+    player.api.requestCards.mockResolvedValueOnce(validPlayedCards);
+
+    const validatedTurn = await playTurn(player, cycleState, mockedRoomApi, 1);
+
+    expect(mockedRoomApi.broadcastPlayerTurn).toHaveBeenCalledWith(validatedTurn);
+    expect(validatedTurn).toEqual({
+      cards: validPlayedCards,
+      playerId: player.id,
+      valid: true,
+    });
+  });
 });

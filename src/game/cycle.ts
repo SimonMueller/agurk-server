@@ -82,23 +82,6 @@ function filterAvailableCardsFromPlayerHands(
   }, {});
 }
 
-function shouldRetryTurn(validatedTurn: ValidatedTurn, retriesLeft: number): boolean {
-  return !validatedTurn.valid && retriesLeft !== 0;
-}
-
-async function playTurnWithRetry(
-  player: Player,
-  previousCycleState: CycleState,
-  roomApi: RoomApi,
-  retriesLeft: number,
-): Promise<ValidatedTurn> {
-  const turnResult = await playTurn(player, previousCycleState, roomApi, retriesLeft);
-
-  return shouldRetryTurn(turnResult, retriesLeft)
-    ? playTurnWithRetry(player, previousCycleState, roomApi, retriesLeft - 1)
-    : turnResult;
-}
-
 function addErrorTurnPlayerIdToOutPlayers(previousCycleState: CycleState, invalidTurn: InvalidTurn): CycleState {
   return {
     ...previousCycleState,
@@ -134,7 +117,7 @@ async function getCycleStateAfterTurn(
   roomApi: RoomApi,
 ): Promise<CycleState> {
   const previousCycleState = await previousCycleStatePromise;
-  const validatedTurn = await playTurnWithRetry(player, previousCycleState, roomApi, TURN_RETRIES_ALLOWED);
+  const validatedTurn = await playTurn(player, previousCycleState, roomApi, TURN_RETRIES_ALLOWED);
 
   return buildNewCycleState(validatedTurn, previousCycleState);
 }

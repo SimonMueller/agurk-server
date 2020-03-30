@@ -43,7 +43,7 @@ function createInvalidTurnWithNoCardsPlayed(playerId: string): InvalidTurn {
   };
 }
 
-export default async function (
+export default async function play(
   player: Player,
   cycleState: CycleState,
   roomApi: RoomApi,
@@ -61,5 +61,8 @@ export default async function (
 
   roomApi.broadcastPlayerTurn(validatedTurn);
 
-  return validatedTurn;
+  const shouldRetryTurn = !validatedTurn.valid && retriesLeft !== 0 && player.api.isConnected();
+  return shouldRetryTurn
+    ? play(player, cycleState, roomApi, retriesLeft - 1)
+    : validatedTurn;
 }
