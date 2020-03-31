@@ -103,7 +103,7 @@ function createNoWinnerErrorGameResult(gameState: GameState): GameResult {
     kind: ERROR_RESULT_KIND,
     error: {
       gameState,
-      message: 'no winner could be determined. game will not be counted.',
+      message: 'no game winner could be determined',
     },
   };
 }
