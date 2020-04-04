@@ -3,6 +3,7 @@ import jwt from 'jsonwebtoken';
 import config from 'config';
 import emojis from 'emojis-list';
 import { AuthenticationBody } from 'agurk-shared';
+import logger from '../logger';
 
 const SIGN_SECRET: string = config.get('security.jwtSignSecret');
 const ACCESS_TOKEN: string = config.get('security.accessToken');
@@ -21,10 +22,12 @@ router.post('/', (req, res) => {
   }
 
   if (token === ACCESS_TOKEN) {
+    const emojiName = `${name} ${getRandomEmoji()}${getRandomEmoji()}`;
     const signedJwt = jwt.sign({}, SIGN_SECRET, {
-      subject: `${name} ${getRandomEmoji()}${getRandomEmoji()}`,
+      subject: emojiName,
       expiresIn: '5 minutes',
     });
+    logger.info(`generated signed token for ${emojiName}`);
     return res.json({ jwt: signedJwt });
   }
 
