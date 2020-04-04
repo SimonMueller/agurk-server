@@ -99,13 +99,5 @@ function handlePlayerJoin(socket: WebSocket, subject: string): void {
 }
 
 export default function (socket: WebSocket, subject: string): void {
-  if (lobby.sessions.length > 7) {
-    logger.warn('game lobby already full. connection will be closed.');
-    socket.close();
-  } else if (!lobby.isIdle) {
-    logger.warn('lobby is already in a running game. connection will be closed.');
-    socket.close();
-  } else {
-    handlePlayerJoin(socket, subject);
-  }
+  handlePlayerJoin(socket, subject);
 }
