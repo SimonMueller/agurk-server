@@ -5,7 +5,6 @@ import playTurn from '../../src/game/turn';
 import PlayerFactory from '../factories/player';
 import PlayerIdFactory from '../factories/playerId';
 import createMockedRoomApi from '../mocks/roomApi';
-import TurnFactory from '../factories/turn';
 import { CycleState } from '../../src/types/cycle';
 import { Hand } from '../../src/types/hand';
 
@@ -47,10 +46,11 @@ describe('play turn', () => {
     player.api.requestCards.mockResolvedValueOnce(playedCards);
     const cycleState: CycleState = {
       turns: [
-        TurnFactory.build({
+        {
           cards: [createSuitCard(3, Suits.HEARTS)],
           playerId: playerIds[1],
-        }),
+          valid: true,
+        },
       ],
       hands: {
         [player.id]: playerHand,
@@ -81,10 +81,11 @@ describe('play turn', () => {
     player.api.requestCards.mockResolvedValueOnce(playedCards);
     const cycleState: CycleState = {
       turns: [
-        TurnFactory.build({
+        {
           cards: [createSuitCard(11, Suits.CLUBS)],
           playerId: playerIds[1],
-        }),
+          valid: true,
+        },
       ],
       hands: {
         [player.id]: playerHand,

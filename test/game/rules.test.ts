@@ -1,5 +1,5 @@
 import {
-  createJokerCard, createSuitCard, Colors, Suits, Card,
+  createJokerCard, createSuitCard, Colors, Suits, Card, ValidatedTurn,
 } from 'agurk-shared';
 import {
   calculateCardCountToDeal,
@@ -205,10 +205,11 @@ describe('check if valid turn', () => {
     });
     const cycleState: CycleState = {
       turns: [
-        TurnFactory.build({
+        {
           cards: [createSuitCard(12, Suits.DIAMONDS)],
           playerId: playerIds[1],
-        }),
+          valid: true,
+        },
       ],
       hands: {
         [turn.playerId]: [
@@ -230,9 +231,11 @@ describe('check if valid turn', () => {
     });
     const cycleState: CycleState = {
       turns: [
-        TurnFactory.build({
+        {
+          playerId: 'someplayer',
           cards: [createSuitCard(8, Suits.DIAMONDS)],
-        }),
+          valid: true,
+        },
       ],
       hands: {
         [turn.playerId]: [
@@ -253,9 +256,11 @@ describe('check if valid turn', () => {
     });
     const cycleState: CycleState = {
       turns: [
-        TurnFactory.build({
+        {
+          playerId: 'someplayer',
           cards: [createJokerCard(Colors.BLACK)],
-        }),
+          valid: true,
+        },
       ],
       hands: {
         [turn.playerId]: [
@@ -280,12 +285,14 @@ describe('check if valid turn', () => {
     });
     const cycleState: CycleState = {
       turns: [
-        TurnFactory.build({
+        {
+          playerId: 'someplayer',
           cards: [
             createJokerCard(Colors.RED),
             createSuitCard(13, Suits.SPADES),
           ],
-        }),
+          valid: true,
+        },
       ],
       hands: {
         [turn.playerId]: [
@@ -311,12 +318,14 @@ describe('check if valid turn', () => {
     });
     const cycleState: CycleState = {
       turns: [
-        TurnFactory.build({
+        {
+          playerId: 'someplayer',
           cards: [
             createJokerCard(Colors.BLACK),
             createSuitCard(13, Suits.SPADES),
           ],
-        }),
+          valid: true,
+        },
       ],
       hands: {
         [turn.playerId]: [
@@ -344,20 +353,22 @@ describe('check if valid turn', () => {
     });
     const cycleState: CycleState = {
       turns: [
-        TurnFactory.build({
+        {
           cards: [
             createSuitCard(7, Suits.HEARTS),
             createSuitCard(9, Suits.SPADES),
           ],
           playerId: playerIds[1],
-        }),
-        TurnFactory.build({
+          valid: true,
+        },
+        {
           cards: [
             createSuitCard(11, Suits.HEARTS),
             createSuitCard(10, Suits.SPADES),
           ],
           playerId: playerIds[2],
-        }),
+          valid: true,
+        },
       ],
       hands: {
         [turn.playerId]: [
@@ -465,13 +476,14 @@ describe('check if valid turn', () => {
     });
     const cycleState: CycleState = {
       turns: [
-        TurnFactory.build({
+        {
           cards: [
             createJokerCard(Colors.RED),
             createSuitCard(8, Suits.SPADES),
           ],
           playerId: playerIds[1],
-        }),
+          valid: true,
+        },
       ],
       hands: {
         [turn.playerId]: [
@@ -499,13 +511,14 @@ describe('check if valid turn', () => {
     });
     const cycleState: CycleState = {
       turns: [
-        TurnFactory.build({
+        {
           cards: [
             createJokerCard(Colors.BLACK),
             createSuitCard(8, Suits.SPADES),
           ],
           playerId: playerIds[1],
-        }),
+          valid: true,
+        },
       ],
       hands: {
         [turn.playerId]: [
@@ -532,10 +545,11 @@ describe('check if valid turn', () => {
     });
     const cycleState: CycleState = {
       turns: [
-        TurnFactory.build({
+        {
           cards: [createJokerCard(Colors.WHITE)],
           playerId: playerIds[1],
-        }),
+          valid: true,
+        },
       ],
       hands: {
         [turn.playerId]: [
@@ -558,14 +572,16 @@ describe('check if valid turn', () => {
     });
     const cycleState: CycleState = {
       turns: [
-        TurnFactory.build({
+        {
           cards: [createJokerCard(Colors.BLACK)],
           playerId: playerIds[1],
-        }),
-        TurnFactory.build({
+          valid: true,
+        },
+        {
           cards: [createSuitCard(2, Suits.CLUBS)],
           playerId: playerIds[2],
-        }),
+          valid: true,
+        },
       ],
       hands: {
         [turn.playerId]: [createSuitCard(9, Suits.HEARTS)],
@@ -618,10 +634,10 @@ describe('check if correct cycle starting player', () => {
   });
 
   test('latest highest turn player is starting player', () => {
-    const turns = [
-      TurnFactory.build({ cards: [createJokerCard(Colors.BLACK)] }),
-      TurnFactory.build({ cards: [createSuitCard(3, Suits.SPADES)] }),
-      TurnFactory.build({ cards: [createJokerCard(Colors.RED)] }),
+    const turns: ValidatedTurn[] = [
+      { playerId: 'player 1', cards: [createJokerCard(Colors.BLACK)], valid: true },
+      { playerId: 'player 2', cards: [createSuitCard(3, Suits.SPADES)], valid: true },
+      { playerId: 'player 3', cards: [createJokerCard(Colors.RED)], valid: true },
     ];
     const initialHands = {
       [turns[0].playerId]: turns[0].cards,
@@ -663,7 +679,10 @@ describe('choose round winner', () => {
   });
 
   test('empty lowest turns in last cycle results in no winner', () => {
-    const turns = TurnFactory.buildList(2);
+    const turns: ValidatedTurn[] = [
+      { playerId: 'player 1', cards: [createJokerCard(Colors.BLACK)], valid: true },
+      { playerId: 'player 2', cards: [createJokerCard(Colors.RED)], valid: true },
+    ];
     const { samplePlayerId } = createDealer();
     const initialHands = {
       [turns[0].playerId]: turns[0].cards,
