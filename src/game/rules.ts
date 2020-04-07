@@ -125,14 +125,14 @@ function isMatchingEveryTurnRule(
 
 const mapTurnCards = (turn: ValidatedTurn): Card[] => turn.cards;
 
-export function validateTurn(turn: Turn, cycleState: CycleState): ValidatedTurn {
-  const previousTurns = cycleState.turns;
-  const availableCards = cycleState.hands[turn.playerId];
-  const playedCards = turn.cards;
-  const turnCount = previousTurns.length;
-  const firstTurn = head(previousTurns);
+export function validateTurn(turnToValidate: Turn, cycleState: CycleState): ValidatedTurn {
+  const previousValidTurns = cycleState.turns.filter(turn => turn.valid);
+  const availableCards = cycleState.hands[turnToValidate.playerId];
+  const playedCards = turnToValidate.cards;
+  const turnCount = previousValidTurns.length;
+  const firstTurn = head(previousValidTurns);
   const previousTurnCardCount = firstTurn ? firstTurn.cards.length : 0;
-  const cyclePlayedCards = chain(mapTurnCards, previousTurns);
+  const cyclePlayedCards = chain(mapTurnCards, previousValidTurns);
 
   const valid = isMatchingEveryTurnRule(
     turnCount,
@@ -142,8 +142,8 @@ export function validateTurn(turn: Turn, cycleState: CycleState): ValidatedTurn 
     cyclePlayedCards,
   );
   return valid
-    ? { ...turn, valid }
-    : { ...turn, valid, invalidReason: 'not following the game rules' };
+    ? { ...turnToValidate, valid }
+    : { ...turnToValidate, valid, invalidReason: 'not following the game rules' };
 }
 
 function isSingleActivePlayer(playerIds: PlayerId[], outPlayers: OutPlayer[]): boolean {

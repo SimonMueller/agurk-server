@@ -125,7 +125,7 @@ describe('penalty threshold exceeded', () => {
   });
 });
 
-describe('check if valid turn', () => {
+describe('validate turn', () => {
   test('first turn one card', () => {
     const turn: Turn = {
       cards: [createSuitCard(10, Suits.DIAMONDS)],
@@ -209,6 +209,40 @@ describe('check if valid turn', () => {
           cards: [createSuitCard(12, Suits.DIAMONDS)],
           playerId: playerIds[1],
           valid: true,
+        },
+      ],
+      hands: {
+        [turn.playerId]: [
+          createSuitCard(13, Suits.HEARTS),
+          createSuitCard(2, Suits.CLUBS),
+          createJokerCard(Colors.WHITE),
+        ],
+      },
+      outPlayers: [],
+      playerIds,
+    };
+
+    expect(validateTurn(turn, cycleState).valid).toBe(true);
+  });
+
+  test('higher card rank from invalid turn isn\'t taken into account', () => {
+    const playerIds = PlayerId.buildList(3);
+    const turn: Turn = TurnFactory.build({
+      cards: [createSuitCard(13, Suits.HEARTS)],
+      playerId: playerIds[0],
+    });
+    const cycleState: CycleState = {
+      turns: [
+        {
+          cards: [createSuitCard(12, Suits.DIAMONDS)],
+          playerId: playerIds[1],
+          valid: true,
+        },
+        {
+          cards: [createJokerCard(Colors.RED)],
+          playerId: playerIds[2],
+          valid: false,
+          invalidReason: 'some reason to be invalid',
         },
       ],
       hands: {
