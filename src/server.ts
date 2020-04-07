@@ -6,6 +6,7 @@ import config from 'config';
 import helmet from 'helmet';
 import cors from 'cors';
 import { JwtPayload } from 'agurk-shared';
+import morgan from 'morgan';
 import handleAuthenticatedConnection from './controllers/session';
 import authentication from './controllers/authentication';
 import logger from './logger';
@@ -18,6 +19,7 @@ export default function (): http.Server {
   const httpServer = http.createServer(app);
   const wsServer = new WebSocket.Server({ server: httpServer });
 
+  app.use(morgan('short'));
   app.use(helmet({
     contentSecurityPolicy: { directives: { defaultSrc: ["'self'"] } },
   }));
