@@ -72,14 +72,10 @@ function ofSuccessResult<E, T>(result: Result<E, T>): result is SuccessResult<T>
 function filterMessagesInInvalidFormatOrJson(): UnaryFunction<Observable<string>, Observable<MessageToBeValidated>> {
   return pipe(
     map(parseJsonMessage),
-    filter(
-      ofSuccessResult,
-    ),
+    filter(ofSuccessResult),
     map(parseResult => parseResult.data),
     map(validateMessageFormat),
-    filter(
-      ofSuccessResult,
-    ),
+    filter(ofSuccessResult),
     map(validateMessageFormatResult => validateMessageFormatResult.data),
   );
 }
