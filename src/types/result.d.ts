@@ -1,4 +1,4 @@
-export interface FailedResult<E> {
+export interface ErrorResult<E> {
   readonly kind: 'ERROR';
   readonly error: E;
 }
@@ -8,4 +8,4 @@ export interface SuccessResult<T> {
   readonly data: T;
 }
 
-export type Result<E, T> = FailedResult<E> | SuccessResult<T>;
+export type Result<E, T> = ErrorResult<E> | SuccessResult<T>;

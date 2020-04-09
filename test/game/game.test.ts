@@ -6,7 +6,7 @@ import createMockedDealer from '../mocks/dealer';
 import PlayerFactory from '../factories/player';
 import playGame from '../../src/game/game';
 import createMockedRoomApi from '../mocks/roomApi';
-import { FailedResult, SuccessResult } from '../../src/types/result';
+import { ErrorResult, SuccessResult } from '../../src/types/result';
 import { Game, GameError } from '../../src/types/game';
 import { PlayerHands } from '../../src/types/hand';
 
@@ -15,7 +15,7 @@ describe('play game', () => {
     const players = PlayerFactory.buildList(1);
     const roomApi = createMockedRoomApi();
     const dealer = createMockedDealer();
-    const gameResult = await playGame(players, roomApi, dealer) as FailedResult<GameError>;
+    const gameResult = await playGame(players, roomApi, dealer) as ErrorResult<GameError>;
 
     expect(gameResult.error).toBeDefined();
     expect(gameResult.error.message).toContain('player count not in valid range');
@@ -26,7 +26,7 @@ describe('play game', () => {
     const roomApi = createMockedRoomApi();
     const dealer = createMockedDealer();
 
-    const gameResult = await playGame(players, roomApi, dealer) as FailedResult<GameError>;
+    const gameResult = await playGame(players, roomApi, dealer) as ErrorResult<GameError>;
 
     expect(gameResult.error).toBeDefined();
     expect(gameResult.error.message).toContain('player count not in valid range');
@@ -151,7 +151,7 @@ describe('play game', () => {
     player2.api.requestCards
       .mockRejectedValueOnce(new Error('some error occurred'));
 
-    const gameResult = await playGame(players, roomApi, dealer) as FailedResult<GameError>;
+    const gameResult = await playGame(players, roomApi, dealer) as ErrorResult<GameError>;
 
     expect(gameResult.error).toBeDefined();
   });
