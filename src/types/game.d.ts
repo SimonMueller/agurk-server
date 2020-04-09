@@ -1,11 +1,10 @@
-import { OutPlayer, PlayerId } from 'agurk-shared';
+import { PlayerId } from 'agurk-shared';
 import { Result } from './result';
 import { Round } from './round';
 
 export interface GameState {
   readonly playerIds: PlayerId[];
   readonly rounds: Round[];
-  readonly outPlayers: OutPlayer[];
 }
 
 export type MinPlayerCount = 2;

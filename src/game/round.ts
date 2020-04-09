@@ -1,15 +1,20 @@
-import { chain, last, partial } from 'ramda';
+import {
+  chain, groupBy, last, partial,
+} from 'ramda';
 import {
   Card, Penalty, PlayerId, ValidatedTurn,
 } from 'agurk-shared';
 import { Dealer } from '../types/dealer';
 import { Player } from '../types/player';
-import { GameState } from '../types/game';
 import { RoomApi } from '../types/room';
 import { Round, RoundState } from '../types/round';
 import playCycle from './cycle';
 import {
-  calculateCardCountToDeal, chooseCycleStartingPlayerId, chooseRoundWinner, isRoundFinished,
+  calculateCardCountToDeal,
+  chooseCycleStartingPlayerId,
+  chooseRoundWinner,
+  isPenaltySumThresholdExceeded,
+  isRoundFinished,
 } from './rules';
 import {
   findActivePlayers, findPenaltiesFromRounds, mapPlayersToPlayerIds, rotatePlayersToPlayerId,
@@ -71,27 +76,52 @@ function findLoosingRoundTurns(roundState: RoundState): ValidatedTurn[] {
     : [];
 }
 
+function findPlayersWithExceededPenaltySumThreshold(penalties: Penalty[]): PlayerId[] {
+  const penaltiesByPlayerId = groupBy(penalty => penalty.playerId, penalties);
+  return Object.keys(penaltiesByPlayerId).filter((playerId) => {
+    const playerPenalties = penaltiesByPlayerId[playerId];
+    const playerPenaltyCards = playerPenalties.map(penalty => penalty.card);
+    return isPenaltySumThresholdExceeded(playerPenaltyCards);
+  });
+}
+
 function finishRound(
-  finishedRoundState: RoundState,
+  roundState: RoundState,
   dealer: Dealer,
   roomApi: RoomApi,
+  previousRounds: Round[],
 ): Round {
-  const winner = chooseRoundWinner(finishedRoundState, dealer.samplePlayerId);
-  const loosingTurns = findLoosingRoundTurns(finishedRoundState);
-  const penalties = createPenaltiesFromTurns(loosingTurns);
+  const winner = chooseRoundWinner(roundState, dealer.samplePlayerId);
+  const loosingTurns = findLoosingRoundTurns(roundState);
+  const currentRoundPenalties = createPenaltiesFromTurns(loosingTurns);
+  const previousRoundPenalties = findPenaltiesFromRounds(previousRounds);
+  const playerIdsWithExceededPenalty = findPlayersWithExceededPenaltySumThreshold([
+    ...currentRoundPenalties, ...previousRoundPenalties,
+  ]);
+  const outPlayersWithExceededPenalty = playerIdsWithExceededPenalty.map(playerId => ({
+    id: playerId, reason: 'penalty threshold exceeded',
+  }));
 
-  roomApi.broadcastEndRound(penalties, finishedRoundState.outPlayers, winner);
+  const updatedRoundState = {
+    ...roundState,
+    outPlayers: [
+      ...roundState.outPlayers,
+      ...outPlayersWithExceededPenalty,
+    ],
+  };
+
+  roomApi.broadcastEndRound(currentRoundPenalties, roundState.outPlayers, winner);
 
   return {
-    ...finishedRoundState,
+    ...updatedRoundState,
     winner,
-    penalties,
+    penalties: currentRoundPenalties,
   };
 }
 
 export default async function (
   players: Player[],
-  gameState: GameState,
+  previousRounds: Round[],
   roomApi: RoomApi,
   dealer: Dealer,
 ): Promise<Round> {
@@ -99,9 +129,8 @@ export default async function (
 
   roomApi.broadcastStartRound(playerIds);
 
-  const { rounds } = gameState;
-  const penaltyCards = findPenaltyCardsFromRounds(rounds);
-  const roundCount = rounds.length;
+  const penaltyCards = findPenaltyCardsFromRounds(previousRounds);
+  const roundCount = previousRounds.length;
   const cardCountToDeal = calculateCardCountToDeal(roundCount);
   const playerHands = dealer.createHandsForPlayerIds(playerIds, penaltyCards, cardCountToDeal);
 
@@ -117,5 +146,5 @@ export default async function (
     outPlayers: [],
   }, roomApi);
 
-  return finishRound(finishedRoundState, dealer, roomApi);
+  return finishRound(finishedRoundState, dealer, roomApi, previousRounds);
 }

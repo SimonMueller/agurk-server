@@ -178,7 +178,8 @@ export function isRoundFinished(roundState: RoundState): boolean {
 }
 
 export function isGameFinished(gameState: GameState): boolean {
-  const { outPlayers, playerIds } = gameState;
+  const outPlayers = chain(round => round.outPlayers, gameState.rounds);
+  const { playerIds } = gameState;
   return isSingleActivePlayer(playerIds, outPlayers)
     || allPlayersOut(playerIds, outPlayers);
 }
@@ -240,7 +241,7 @@ function chooseSingleActivePlayer(playerIds: PlayerId[], outPlayers: OutPlayer[]
 
 // TODO: test for both players out because of same card but one with lower penalty
 export function chooseGameWinner(sample: SamplePlayerId, gameState: GameState): PlayerId | undefined {
-  const { outPlayers } = gameState;
+  const outPlayers = chain(round => round.outPlayers, gameState.rounds);
   const { playerIds } = gameState;
 
   return allPlayersOut(playerIds, outPlayers)

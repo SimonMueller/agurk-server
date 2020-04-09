@@ -16,7 +16,6 @@ describe('play round', () => {
     const gameState = {
       playerIds,
       rounds: [],
-      outPlayers: [],
     };
     const roomApi = createMockedRoomApi();
     const initialHands = {
@@ -61,7 +60,7 @@ describe('play round', () => {
       .mockResolvedValueOnce([createSuitCard(7, Suits.DIAMONDS)])
       .mockResolvedValueOnce([createSuitCard(8, Suits.DIAMONDS)]);
 
-    const round = await playRound(players, gameState, roomApi, dealer);
+    const round = await playRound(players, gameState.rounds, roomApi, dealer);
 
     expect(round).toMatchObject({
       initialHands,
@@ -83,7 +82,6 @@ describe('play round', () => {
     const gameState = {
       playerIds,
       rounds: [],
-      outPlayers: [],
     };
     const roomApi = createMockedRoomApi();
     const initialHands = {
@@ -116,7 +114,7 @@ describe('play round', () => {
       .mockResolvedValueOnce([createJokerCard(Colors.BLACK)])
       .mockResolvedValueOnce([createSuitCard(3, Suits.CLUBS)]);
 
-    const { cycles } = await playRound(players, gameState, roomApi, dealer);
+    const { cycles } = await playRound(players, gameState.rounds, roomApi, dealer);
     const { playerIds: orderedSecondCyclePlayerIds } = cycles[1];
 
     expect(orderedSecondCyclePlayerIds[0]).toEqual(player3.id);
@@ -133,7 +131,6 @@ describe('play round', () => {
     const gameState = {
       playerIds,
       rounds: [],
-      outPlayers: [],
     };
     const roomApi = createMockedRoomApi();
     const initialHands = {
@@ -154,7 +151,7 @@ describe('play round', () => {
     player3.api.requestCards
       .mockResolvedValueOnce([createSuitCard(5, Suits.CLUBS)]);
 
-    const round = await playRound(players, gameState, roomApi, dealer);
+    const round = await playRound(players, gameState.rounds, roomApi, dealer);
 
     expect(round.penalties).toEqual([
       {
@@ -180,7 +177,6 @@ describe('play round', () => {
     const gameState = {
       playerIds,
       rounds: [],
-      outPlayers: [],
     };
     const roomApi = createMockedRoomApi();
     const initialHands = {
@@ -197,7 +193,7 @@ describe('play round', () => {
     player2.api.requestCards
       .mockRejectedValueOnce(new Error('some error happened'));
 
-    const round = await playRound(players, gameState, roomApi, dealer);
+    const round = await playRound(players, gameState.rounds, roomApi, dealer);
 
     expect(round.outPlayers).toMatchObject([{
       id: player2.id,
@@ -212,7 +208,6 @@ describe('play round', () => {
     const gameState = {
       playerIds,
       rounds: [],
-      outPlayers: [],
     };
     const roomApi = createMockedRoomApi();
     const initialHands = {
@@ -229,7 +224,7 @@ describe('play round', () => {
     player2.api.requestCards
       .mockResolvedValueOnce([createSuitCard(3, Suits.CLUBS)]);
 
-    const round = await playRound(players, gameState, roomApi, dealer);
+    const round = await playRound(players, gameState.rounds, roomApi, dealer);
 
     expect(round.penalties).toHaveLength(0);
     expect(round.winner).toEqual(player1.id);
@@ -243,7 +238,6 @@ describe('play round', () => {
     const gameState = {
       playerIds,
       rounds: [],
-      outPlayers: [],
     };
     const roomApi = createMockedRoomApi();
     const initialHands = {
@@ -261,7 +255,7 @@ describe('play round', () => {
     player2.api.requestCards
       .mockRejectedValueOnce(new Error('some error happened'));
 
-    const round = await playRound(players, gameState, roomApi, mockedDealer);
+    const round = await playRound(players, gameState.rounds, roomApi, mockedDealer);
 
     expect(round.penalties).toHaveLength(0);
     expect(round.winner).toBeUndefined();

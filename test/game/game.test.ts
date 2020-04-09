@@ -1,6 +1,7 @@
 import {
   PlayerId, createJokerCard, createSuitCard, Colors, Suits,
 } from 'agurk-shared';
+import { last } from 'ramda';
 import createMockedDealer from '../mocks/dealer';
 import PlayerFactory from '../factories/player';
 import playGame from '../../src/game/game';
@@ -121,40 +122,13 @@ describe('play game', () => {
     expect(gameResult.data).toMatchObject({
       playerIds,
       winner: player1.id,
+    });
+    expect(last(gameResult.data.rounds)).toMatchObject({
       outPlayers: [{
         id: player2.id,
         reason: 'penalty threshold exceeded',
       }],
     });
-  });
-
-  test('bubbling up of round out players', async () => {
-    const player1 = PlayerFactory.build();
-    const player2 = PlayerFactory.build();
-    const players = [player1, player2];
-    const roomApi = createMockedRoomApi();
-    const initialHandsRound1: PlayerHands = {
-      [player1.id]: [createSuitCard(8, Suits.HEARTS)],
-      [player2.id]: [createSuitCard(2, Suits.DIAMONDS)],
-    };
-
-    const dealer = createMockedDealer();
-    dealer.createHandsForPlayerIds
-      .mockReturnValueOnce(initialHandsRound1);
-
-    player1.api.requestCards
-      .mockResolvedValueOnce([createSuitCard(8, Suits.HEARTS)]);
-
-    player2.api.requestCards
-      .mockRejectedValueOnce(new Error('some error occurred'));
-
-    const gameResult = await playGame(players, roomApi, dealer) as SuccessResult<Game>;
-
-    expect(gameResult.data).toBeDefined();
-    expect(gameResult.data.outPlayers).toEqual([{
-      id: player2.id,
-      reason: 'no cards played',
-    }]);
   });
 
   test('all players out because of errors. error game with incomplete game state.', async () => {
