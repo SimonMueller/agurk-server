@@ -1,7 +1,7 @@
 {
   "server": {
     "requestTimeoutInMillis": 1000,
-    "requestRetriesAllowed": 0,
+    "requestRetriesAllowed": 1,
     "delayAfterCycleInMillis": 0,
     "pingIntervalInMillis": 1000
   },

@@ -191,7 +191,7 @@ describe('play round', () => {
       .mockResolvedValueOnce([createSuitCard(8, Suits.CLUBS)]);
 
     player2.api.requestCards
-      .mockRejectedValueOnce(new Error('some error happened'));
+      .mockRejectedValue(new Error('some error happened'));
 
     const round = await playRound(players, gameState.rounds, roomApi, dealer);
 
@@ -219,7 +219,7 @@ describe('play round', () => {
     dealer.samplePlayerId.mockReturnValueOnce(player1.id);
 
     player1.api.requestCards
-      .mockRejectedValueOnce(new Error('some error happened'));
+      .mockRejectedValue(new Error('some error happened'));
 
     player2.api.requestCards
       .mockResolvedValueOnce([createSuitCard(3, Suits.CLUBS)]);
@@ -250,10 +250,10 @@ describe('play round', () => {
     mockedDealer.samplePlayerId.mockImplementation(realDealer.samplePlayerId);
 
     player1.api.requestCards
-      .mockRejectedValueOnce(new Error('some error happened'));
+      .mockRejectedValue(new Error('some error happened'));
 
     player2.api.requestCards
-      .mockRejectedValueOnce(new Error('some error happened'));
+      .mockRejectedValue(new Error('some error happened'));
 
     const round = await playRound(players, gameState.rounds, roomApi, mockedDealer);
 

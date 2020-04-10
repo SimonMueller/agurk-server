@@ -61,8 +61,5 @@ export default async function play(
 
   roomApi.broadcastPlayerTurn(validatedTurn);
 
-  const shouldRetryTurn = !validatedTurn.valid && retriesLeft !== 0 && player.api.isConnected();
-  return shouldRetryTurn
-    ? play(player, cycleState, roomApi, retriesLeft - 1)
-    : validatedTurn;
+  return validatedTurn;
 }

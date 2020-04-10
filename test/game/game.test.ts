@@ -146,10 +146,10 @@ describe('play game', () => {
       .mockReturnValueOnce(initialHandsRound1);
 
     player1.api.requestCards
-      .mockRejectedValueOnce(new Error('some error occurred'));
+      .mockRejectedValue(new Error('some error occurred'));
 
     player2.api.requestCards
-      .mockRejectedValueOnce(new Error('some error occurred'));
+      .mockRejectedValue(new Error('some error occurred'));
 
     const gameResult = await playGame(players, roomApi, dealer) as ErrorResult<GameError>;
 

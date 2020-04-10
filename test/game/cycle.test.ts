@@ -1,11 +1,12 @@
 import {
-  createJokerCard, createSuitCard, Colors, Suits,
+  createJokerCard, createSuitCard, Colors, Suits, Card,
 } from 'agurk-shared';
 import PlayerFactory from '../factories/player';
 import createMockedRoomApi from '../mocks/roomApi';
 import playCycle from '../../src/game/cycle';
 import { RoundState } from '../../src/types/round';
 import { Hand } from '../../src/types/hand';
+import PlayerIdFactory from '../factories/playerId';
 
 describe('play cycle', () => {
   test('valid first cycle result', async () => {
@@ -68,8 +69,8 @@ describe('play cycle', () => {
     const player1 = PlayerFactory.build();
     const player2 = PlayerFactory.build();
 
-    player1.api.requestCards.mockResolvedValueOnce(Promise.resolve(player1PlayedCards));
-    player2.api.requestCards.mockResolvedValueOnce(Promise.resolve(player2PlayedCards));
+    player1.api.requestCards.mockResolvedValue(Promise.resolve(player1PlayedCards));
+    player2.api.requestCards.mockResolvedValue(Promise.resolve(player2PlayedCards));
 
     const roundState: RoundState = {
       cycles: [],
@@ -91,6 +92,42 @@ describe('play cycle', () => {
       {
         id: player2.id,
         reason: 'not following the game rules',
+      },
+    ]);
+  });
+
+  test('valid turn after retry', async () => {
+    const playerIds = PlayerIdFactory.buildList(1);
+    const invalidPlayedCards: Card[] = [createJokerCard(Colors.BLACK)];
+    const validPlayedCards: Card[] = [createSuitCard(3, Suits.SPADES)];
+    const playerHand: Hand = [createSuitCard(3, Suits.SPADES)];
+    const player = PlayerFactory.build({ id: playerIds[0] });
+    const roundState: RoundState = {
+      cycles: [],
+      outPlayers: [],
+      initialHands: {
+        [player.id]: playerHand,
+      },
+      playerIds: [player.id],
+    };
+    const mockedRoomApi = createMockedRoomApi();
+
+    player.api.requestCards.mockResolvedValueOnce(invalidPlayedCards);
+    player.api.requestCards.mockResolvedValueOnce(validPlayedCards);
+
+    const cycle = await playCycle([player], roundState, mockedRoomApi);
+
+    expect(cycle.turns).toEqual([
+      {
+        cards: invalidPlayedCards,
+        playerId: player.id,
+        valid: false,
+        invalidReason: 'not following the game rules',
+      },
+      {
+        cards: validPlayedCards,
+        playerId: player.id,
+        valid: true,
       },
     ]);
   });

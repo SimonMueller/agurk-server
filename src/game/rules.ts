@@ -177,6 +177,11 @@ export function isRoundFinished(roundState: RoundState): boolean {
     : false;
 }
 
+export function shouldIssuePenalties(cycleState: CycleState): boolean {
+  const { playerIds, outPlayers } = cycleState;
+  return !isSingleActivePlayer(playerIds, outPlayers) && !allPlayersOut(playerIds, outPlayers);
+}
+
 export function isGameFinished(gameState: GameState): boolean {
   const outPlayers = chain(round => round.outPlayers, gameState.rounds);
   const { playerIds } = gameState;

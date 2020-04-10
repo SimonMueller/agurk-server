@@ -95,7 +95,7 @@ function addErrorTurnPlayerIdToOutPlayers(previousCycleState: CycleState, invali
   };
 }
 
-function addValidTurnToCycleTurns(previousCycleState: CycleState, turn: ValidatedTurn): CycleState {
+function addTurnToCycle(previousCycleState: CycleState, turn: ValidatedTurn): CycleState {
   return {
     ...previousCycleState,
     turns: [
@@ -105,10 +105,24 @@ function addValidTurnToCycleTurns(previousCycleState: CycleState, turn: Validate
   };
 }
 
-function buildNewCycleState(validatedTurn: ValidatedTurn, previousCycleState: CycleState): CycleState {
-  return validatedTurn.valid
-    ? addValidTurnToCycleTurns(previousCycleState, validatedTurn)
-    : addErrorTurnPlayerIdToOutPlayers(previousCycleState, validatedTurn);
+function finishPlayerTurn(turn: ValidatedTurn, cycleState: CycleState): CycleState {
+  return turn.valid
+    ? cycleState
+    : addErrorTurnPlayerIdToOutPlayers(cycleState, turn);
+}
+
+async function playTurnWithRetry(
+  player: Player,
+  cycleState: CycleState,
+  roomApi: RoomApi,
+  retriesLeft: number,
+): Promise<CycleState> {
+  const turn = await playTurn(player, cycleState, roomApi, retriesLeft);
+  const updatedCycleState = addTurnToCycle(cycleState, turn);
+  const shouldRetryTurn = !turn.valid && retriesLeft !== 0 && player.api.isConnected();
+  return shouldRetryTurn
+    ? playTurnWithRetry(player, updatedCycleState, roomApi, retriesLeft - 1)
+    : finishPlayerTurn(turn, updatedCycleState);
 }
 
 async function getCycleStateAfterTurn(
@@ -117,9 +131,7 @@ async function getCycleStateAfterTurn(
   roomApi: RoomApi,
 ): Promise<CycleState> {
   const previousCycleState = await previousCycleStatePromise;
-  const validatedTurn = await playTurn(player, previousCycleState, roomApi, TURN_RETRIES_ALLOWED);
-
-  return buildNewCycleState(validatedTurn, previousCycleState);
+  return playTurnWithRetry(player, previousCycleState, roomApi, TURN_RETRIES_ALLOWED);
 }
 
 function turnsToCycleState(roomApi: RoomApi) {

@@ -14,7 +14,7 @@ import {
   chooseCycleStartingPlayerId,
   chooseRoundWinner,
   isPenaltySumThresholdExceeded,
-  isRoundFinished,
+  isRoundFinished, shouldIssuePenalties,
 } from './rules';
 import {
   findActivePlayers, findPenaltiesFromRounds, mapPlayersToPlayerIds, rotatePlayersToPlayerId,
@@ -71,7 +71,7 @@ async function iterate(
 function findLoosingRoundTurns(roundState: RoundState): ValidatedTurn[] {
   const { cycles } = roundState;
   const lastCycle = last(cycles);
-  return lastCycle && lastCycle.turns.length > 1
+  return lastCycle && shouldIssuePenalties(lastCycle)
     ? lastCycle.highestTurns
     : [];
 }
