@@ -1,5 +1,5 @@
 import {
-  Card, Colors, createJokerCard, createSuitCard, Suits, ValidatedTurn,
+  Card, Colors, createJokerCard, createSuitCard, Suits, ValidTurn,
 } from 'agurk-shared';
 import {
   calculateCardCountToDeal,
@@ -138,7 +138,7 @@ describe('check if correct cycle starting player', () => {
   });
 
   test('latest highest turn player is starting player', () => {
-    const turns: ValidatedTurn[] = [
+    const turns: ValidTurn[] = [
       { playerId: 'player 1', cards: [createJokerCard(Colors.BLACK)], valid: true },
       { playerId: 'player 2', cards: [createSuitCard(3, Suits.SPADES)], valid: true },
       { playerId: 'player 3', cards: [createJokerCard(Colors.RED)], valid: true },
@@ -183,7 +183,7 @@ describe('choose round winner', () => {
   });
 
   test('empty lowest turns in last cycle results in no winner', () => {
-    const turns: ValidatedTurn[] = [
+    const turns: ValidTurn[] = [
       { playerId: 'player 1', cards: [createJokerCard(Colors.BLACK)], valid: true },
       { playerId: 'player 2', cards: [createJokerCard(Colors.RED)], valid: true },
     ];
