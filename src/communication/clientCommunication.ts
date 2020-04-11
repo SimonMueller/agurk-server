@@ -142,7 +142,7 @@ export function broadcast<T extends Message>(
   logger.info('broadcast message sent', message);
 }
 
-export function request<T>(
+export async function request<T>(
   socket: WebSocket,
   requesterMessage: Message,
   expectedMessage: ExpectedMessage,
@@ -167,9 +167,11 @@ export function request<T>(
         filterMessagesNotMatchingExpectedMessage<T>(expectedMessage),
         timeout(timeoutInMilliseconds),
         take(1),
-        tap(() => socket.removeListener('close', rejectOnSocketClose)),
       ).toPromise();
   });
 
-  return Promise.race<T>([socketClose, requestResult]);
+  const closeOrResult = await Promise.race<T>([socketClose, requestResult]);
+  socket.removeListener('close', rejectOnSocketClose);
+
+  return closeOrResult;
 }
