@@ -166,8 +166,8 @@ export default async function (
 
   roomApi.broadcastStartCycle(playerIds);
 
-  const roundTurns = chain(cycle => cycle.turns, cycles);
-  const hands = filterAvailableCardsFromPlayerHands(playerIds, initialHands, roundTurns);
+  const validRoundTurns = chain(cycle => cycle.turns, cycles).filter(turn => turn.valid);
+  const hands = filterAvailableCardsFromPlayerHands(playerIds, initialHands, validRoundTurns);
 
   const cycleState = await playTurnsInCycle(players, roomApi, hands, playerIds);
 

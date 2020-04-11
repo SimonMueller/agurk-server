@@ -1,5 +1,5 @@
 import {
-  createJokerCard, createSuitCard, Colors, Suits, Card,
+  createJokerCard, createSuitCard, Colors, Suits, Card, ValidatedTurn,
 } from 'agurk-shared';
 import PlayerFactory from '../factories/player';
 import createMockedRoomApi from '../mocks/roomApi';
@@ -124,6 +124,54 @@ describe('play cycle', () => {
         valid: false,
         invalidReason: 'not following the game rules',
       },
+      {
+        cards: validPlayedCards,
+        playerId: player.id,
+        valid: true,
+      },
+    ]);
+  });
+
+  test('valid turn with card from invalid turn from previous cycle', async () => {
+    const playerIds = PlayerIdFactory.buildList(1);
+    const player = PlayerFactory.build({ id: playerIds[0] });
+    const invalidTurn: ValidatedTurn = {
+      playerId: player.id,
+      cards: [createSuitCard(3, Suits.SPADES), createSuitCard(5, Suits.DIAMONDS)],
+      valid: false,
+      invalidReason: 'not following the game rules',
+    };
+    const validTurn: ValidatedTurn = {
+      playerId: player.id,
+      cards: [createSuitCard(5, Suits.DIAMONDS)],
+      valid: true,
+    };
+    const validPlayedCards: Card[] = [createSuitCard(3, Suits.SPADES)];
+    const playerHand: Hand = [createSuitCard(3, Suits.SPADES), createSuitCard(5, Suits.DIAMONDS)];
+    const roundState: RoundState = {
+      cycles: [{
+        hands: {
+          [player.id]: playerHand,
+        },
+        outPlayers: [],
+        playerIds,
+        turns: [invalidTurn, validTurn],
+        highestTurns: [validTurn],
+        lowestTurns: [validTurn],
+      }],
+      outPlayers: [],
+      initialHands: {
+        [player.id]: playerHand,
+      },
+      playerIds: [player.id],
+    };
+    const mockedRoomApi = createMockedRoomApi();
+
+    player.api.requestCards.mockResolvedValueOnce(validPlayedCards);
+
+    const cycle = await playCycle([player], roundState, mockedRoomApi);
+
+    expect(cycle.turns).toEqual([
       {
         cards: validPlayedCards,
         playerId: player.id,
