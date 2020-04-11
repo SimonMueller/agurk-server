@@ -2,7 +2,7 @@ import {
   ascend, chain, groupBy, head, identity, isEmpty, keys, last, map, partial, pickBy, sum, values,
 } from 'ramda';
 import {
-  ValidatedTurn, OutPlayer, PlayerId, Penalty, Card, Rank, compareRanks as compareCardRanks, cardEquals,
+  ValidatedTurn, OutPlayer, PlayerId, Penalty, Card, Rank, compareRanks as compareCardRanks, cardEquals, ValidTurn,
 } from 'agurk-shared';
 import { Cycle, CycleState } from '../types/cycle';
 import {
@@ -126,7 +126,7 @@ function isMatchingEveryTurnRule(
 const mapTurnCards = (turn: ValidatedTurn): Card[] => turn.cards;
 
 export function validateTurn(turnToValidate: Turn, cycleState: CycleState): ValidatedTurn {
-  const previousValidTurns = cycleState.turns.filter(turn => turn.valid);
+  const previousValidTurns = cycleState.turns.filter((turn): turn is ValidTurn => turn.valid);
   const availableCards = cycleState.hands[turnToValidate.playerId];
   const playedCards = turnToValidate.cards;
   const turnCount = previousValidTurns.length;

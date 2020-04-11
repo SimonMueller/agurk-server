@@ -1,4 +1,6 @@
-import { OutPlayer, PlayerId, ValidatedTurn } from 'agurk-shared';
+import {
+  OutPlayer, PlayerId, ValidatedTurn, ValidTurn,
+} from 'agurk-shared';
 import { PlayerHands } from './hand';
 
 export interface CycleState {
@@ -9,8 +11,8 @@ export interface CycleState {
 }
 
 interface FinishedCycle {
-  readonly highestTurns: ValidatedTurn[];
-  readonly lowestTurns: ValidatedTurn[];
+  readonly highestTurns: ValidTurn[];
+  readonly lowestTurns: ValidTurn[];
 }
 
 export type Cycle = FinishedCycle & CycleState;

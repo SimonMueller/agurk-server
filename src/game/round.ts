@@ -2,7 +2,7 @@ import {
   chain, groupBy, last, partial,
 } from 'ramda';
 import {
-  Card, Penalty, PlayerId, ValidatedTurn,
+  Card, Penalty, PlayerId, ValidatedTurn, ValidTurn,
 } from 'agurk-shared';
 import { Dealer } from '../types/dealer';
 import { Player } from '../types/player';
@@ -68,7 +68,7 @@ async function iterate(
     : iterate(orderedActivePlayers, newRoundState, roomApi);
 }
 
-function findLoosingRoundTurns(roundState: RoundState): ValidatedTurn[] {
+function findLoosingRoundTurns(roundState: RoundState): ValidTurn[] {
   const { cycles } = roundState;
   const lastCycle = last(cycles);
   return lastCycle && shouldIssuePenalties(lastCycle)

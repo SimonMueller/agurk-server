@@ -3,7 +3,7 @@ import {
   ascend, chain, descend, differenceWith, head, identity, sort,
 } from 'ramda';
 import {
-  PlayerId, Card, Rank, ValidatedTurn, cardEquals, InvalidTurn,
+  PlayerId, Card, Rank, ValidatedTurn, cardEquals, InvalidTurn, ValidTurn,
 } from 'agurk-shared';
 import { Cycle, CycleState } from '../types/cycle';
 import { Hand, PlayerHands } from '../types/hand';
@@ -21,7 +21,7 @@ const mapCardRank = (card: Card): Rank => card.rank;
 
 const mapTurnCards = (turn: ValidatedTurn): Card[] => turn.cards;
 
-function filterTurnsIncludingCardRank(turns: ValidatedTurn[], cardRank: Rank): ValidatedTurn[] {
+function filterTurnsIncludingCardRank(turns: ValidTurn[], cardRank: Rank): ValidTurn[] {
   return turns.filter((turn) => {
     const { cards } = turn;
     const cardRanks = cards.map(mapCardRank);
@@ -33,7 +33,7 @@ const compareCardRankAsc = ascend(identity);
 
 const compareCardRankDesc = descend(identity);
 
-function findRanksPlayedInTurns(turns: ValidatedTurn[]): Rank[] {
+function findRanksPlayedInTurns(turns: ValidTurn[]): Rank[] {
   const cardsPlayedInTurns = chain(mapTurnCards, turns);
   return cardsPlayedInTurns.map(mapCardRank);
 }
@@ -45,7 +45,7 @@ function findFirstRankAfterSortBy(
   return head(sort(by, ranksPlayedInTurns));
 }
 
-function findLowestRankTurns(turns: ValidatedTurn[]): ValidatedTurn[] {
+function findLowestRankTurns(turns: ValidTurn[]): ValidTurn[] {
   const ranksPlayedInTurns: Rank[] = findRanksPlayedInTurns(turns);
   const lowestRank = findFirstRankAfterSortBy(compareCardRankAsc, ranksPlayedInTurns);
   return lowestRank
@@ -53,7 +53,7 @@ function findLowestRankTurns(turns: ValidatedTurn[]): ValidatedTurn[] {
     : [];
 }
 
-const findHighestRankTurns = (turns: ValidatedTurn[]): ValidatedTurn[] => {
+const findHighestRankTurns = (turns: ValidTurn[]): ValidTurn[] => {
   const ranksPlayedInTurns: Rank[] = findRanksPlayedInTurns(turns);
   const highestRank = findFirstRankAfterSortBy(compareCardRankDesc, ranksPlayedInTurns);
   return highestRank
@@ -61,7 +61,7 @@ const findHighestRankTurns = (turns: ValidatedTurn[]): ValidatedTurn[] => {
     : [];
 };
 
-function filterUnplayedCardsFromHand(turns: ValidatedTurn[], hand: Hand): Card[] {
+function filterUnplayedCardsFromHand(turns: ValidTurn[], hand: Hand): Card[] {
   const cyclePlayedCards = chain(mapTurnCards, turns);
   return differenceWith(cardEquals, hand, cyclePlayedCards);
 }
@@ -69,7 +69,7 @@ function filterUnplayedCardsFromHand(turns: ValidatedTurn[], hand: Hand): Card[]
 function filterAvailableCardsFromPlayerHands(
   playerIds: PlayerId[],
   hands: PlayerHands,
-  turns: ValidatedTurn[],
+  turns: ValidTurn[],
 ): PlayerHands {
   return playerIds.reduce((cardsInHandAcc, playerId) => {
     const hand = hands[playerId];
@@ -166,14 +166,15 @@ export default async function (
 
   roomApi.broadcastStartCycle(playerIds);
 
-  const validRoundTurns = chain(cycle => cycle.turns, cycles).filter(turn => turn.valid);
+  const validRoundTurns = chain(cycle => cycle.turns, cycles).filter((turn): turn is ValidTurn => turn.valid);
   const hands = filterAvailableCardsFromPlayerHands(playerIds, initialHands, validRoundTurns);
 
   const cycleState = await playTurnsInCycle(players, roomApi, hands, playerIds);
 
   const { turns } = cycleState;
-  const highestTurns = findHighestRankTurns(turns);
-  const lowestTurns = findLowestRankTurns(turns);
+  const validCycleTurns = turns.filter((turn): turn is ValidTurn => turn.valid);
+  const highestTurns = findHighestRankTurns(validCycleTurns);
+  const lowestTurns = findLowestRankTurns(validCycleTurns);
   const highestTurnPlayers = highestTurns.map(turn => turn.playerId);
 
   roomApi.broadcastEndCycle(cycleState.outPlayers, highestTurnPlayers, DELAY_AFTER_CYCLE_IN_MILLIS);
