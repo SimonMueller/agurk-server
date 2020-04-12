@@ -114,7 +114,7 @@ function finishRound(
     ],
   };
 
-  roomApi.broadcastEndRound(currentRoundPenalties, roundState.outPlayers, winner);
+  roomApi.broadcastEndRound(currentRoundPenalties, updatedRoundState.outPlayers, winner);
 
   return {
     ...updatedRoundState,
