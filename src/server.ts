@@ -10,7 +10,7 @@ import handleAuthenticatedConnection from './controllers/session';
 import authentication from './controllers/authentication';
 import logger from './logger';
 import requestAuthentication from './communication/authenticationApi';
-import SocketCloseCode from './socketCloseCode';
+import SocketCloseCode from './communication/socketCloseCode';
 
 const SIGN_SECRET: string = config.get('security.jwtSignSecret');
 

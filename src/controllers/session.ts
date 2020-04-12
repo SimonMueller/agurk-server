@@ -10,7 +10,7 @@ import createDealer from '../game/dealer';
 import { generateId } from '../util';
 import { RoomApi } from '../types/room';
 import { PlayerApi } from '../types/player';
-import SocketCloseCode from '../socketCloseCode';
+import SocketCloseCode from '../communication/socketCloseCode';
 
 const PING_INTERVAL_IN_MILLIS: number = config.get('server.pingIntervalInMillis');
 
