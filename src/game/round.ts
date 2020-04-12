@@ -4,6 +4,7 @@ import {
 import {
   Card, Penalty, PlayerId, ValidatedTurn, ValidTurn,
 } from 'agurk-shared';
+import config from 'config';
 import { Dealer } from '../types/dealer';
 import { Player } from '../types/player';
 import { RoomApi } from '../types/room';
@@ -19,6 +20,9 @@ import {
 import {
   findActivePlayers, findPenaltiesFromRounds, mapPlayersToPlayerIds, rotatePlayersToPlayerId,
 } from './common';
+import { delay } from '../util';
+
+const DELAY_AFTER_ROUND_IN_MILLIS: number = config.get('server.delayAfterRoundInMillis');
 
 const createPenaltyFor = (playerId: PlayerId, card: Card): Penalty => ({ card, playerId });
 
@@ -146,5 +150,5 @@ export default async function (
     outPlayers: [],
   }, roomApi);
 
-  return finishRound(finishedRoundState, dealer, roomApi, previousRounds);
+  return delay(finishRound(finishedRoundState, dealer, roomApi, previousRounds), DELAY_AFTER_ROUND_IN_MILLIS);
 }

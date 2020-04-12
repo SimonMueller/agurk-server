@@ -1,9 +1,10 @@
 {
   "server": {
     "port": 3001,
-    "requestTimeoutInMillis": 10000,
+    "requestTimeoutInMillis": 15000,
     "requestRetriesAllowed": 1,
-    "delayAfterCycleInMillis": 5000,
+    "delayAfterCycleInMillis": 3000,
+    "delayAfterRoundInMillis": 3000,
     "pingIntervalInMillis": 50000
   },
   "security": {

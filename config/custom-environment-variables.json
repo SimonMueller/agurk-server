@@ -4,6 +4,7 @@
     "requestTimeoutInMillis": "REQUEST_TIMEOUT_IN_MILLIS",
     "requestRetriesAllowed": "REQUEST_RETRIES_ALLOWED",
     "delayAfterCycleInMillis": "DELAY_AFTER_CYCLE_IN_MILLIS",
+    "delayAfterRoundInMillis": "DELAY_AFTER_ROUND_IN_MILLIS",
     "pingIntervalInMillis": "PING_INTERVAL_IN_MILLIS"
   },
   "security": {

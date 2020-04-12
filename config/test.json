@@ -3,6 +3,7 @@
     "requestTimeoutInMillis": 1000,
     "requestRetriesAllowed": 1,
     "delayAfterCycleInMillis": 0,
+    "delayAfterRoundInMillis": 0,
     "pingIntervalInMillis": 1000
   },
   "security": {
