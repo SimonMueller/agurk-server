@@ -10,6 +10,7 @@ import createDealer from '../game/dealer';
 import { generateId } from '../util';
 import { RoomApi } from '../types/room';
 import { PlayerApi } from '../types/player';
+import SocketCloseCode from '../socketCloseCode';
 
 const PING_INTERVAL_IN_MILLIS: number = config.get('server.pingIntervalInMillis');
 
@@ -99,5 +100,9 @@ function handlePlayerJoin(socket: WebSocket, subject: string): void {
 }
 
 export default function (socket: WebSocket, subject: string): void {
-  handlePlayerJoin(socket, subject);
+  if (lobby.isIdle) {
+    return handlePlayerJoin(socket, subject);
+  }
+
+  return socket.close(SocketCloseCode.LOBBY_NOT_IDLE, 'Cannot join lobby which is in a running game');
 }

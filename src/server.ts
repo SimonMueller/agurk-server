@@ -10,6 +10,7 @@ import handleAuthenticatedConnection from './controllers/session';
 import authentication from './controllers/authentication';
 import logger from './logger';
 import requestAuthentication from './communication/authenticationApi';
+import SocketCloseCode from './socketCloseCode';
 
 const SIGN_SECRET: string = config.get('security.jwtSignSecret');
 
@@ -38,7 +39,7 @@ export default function (): http.Server {
       })
       .catch(() => {
         logger.warn('authentication for connection failed. closing connection.');
-        socket.close();
+        socket.close(SocketCloseCode.AUTHENTICATION_FAILED, 'Socket connection authentication failed.');
       });
   });
 
