@@ -84,11 +84,12 @@ function broadcastEndCycle(
   return broadcast(sockets, message);
 }
 
-function broadcastStartCycle(sockets: WebSocket[], orderedPlayers: PlayerId[]): void {
+function broadcastStartCycle(sockets: WebSocket[], orderedPlayers: PlayerId[], isLastOfRound: boolean): void {
   const message = {
     name: MessageName.BROADCAST_START_CYCLE,
     data: {
       orderedPlayers,
+      isLastOfRound,
     },
   } as const;
   return broadcast(sockets, message);

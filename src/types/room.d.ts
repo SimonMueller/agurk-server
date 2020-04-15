@@ -5,7 +5,7 @@ import {
 export interface RoomApi {
   readonly broadcastStartGame: (players: PlayerId[]) => void;
   readonly broadcastStartRound: (players: PlayerId[]) => void;
-  readonly broadcastStartCycle: (orderedPlayers: PlayerId[]) => void;
+  readonly broadcastStartCycle: (orderedPlayers: PlayerId[], istLastOfRound: boolean) => void;
   readonly broadcastStartPlayerTurn: (playerId: PlayerId) => void;
   readonly broadcastPlayerTurn: (turn: ValidatedTurn) => void;
   readonly broadcastEndCycle: (

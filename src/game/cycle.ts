@@ -163,11 +163,11 @@ export default async function (
 ): Promise<Cycle> {
   const { initialHands, cycles } = roundState;
   const playerIds = mapPlayersToPlayerIds(players);
-
-  roomApi.broadcastStartCycle(playerIds);
-
   const validRoundTurns = chain(cycle => cycle.turns, cycles).filter((turn): turn is ValidTurn => turn.valid);
   const hands = filterAvailableCardsFromPlayerHands(playerIds, initialHands, validRoundTurns);
+  const isLastOfRound = Object.values(hands).every(hand => hand.length === 1);
+
+  roomApi.broadcastStartCycle(playerIds, isLastOfRound);
 
   const cycleState = await playTurnsInCycle(players, roomApi, hands, playerIds);
 
