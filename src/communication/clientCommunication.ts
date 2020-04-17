@@ -1,6 +1,4 @@
-import {
-  any, object, string,
-} from '@hapi/joi';
+import { any, object, string } from '@hapi/joi';
 import {
   fromEventPattern, Observable, pipe, UnaryFunction,
 } from 'rxjs';
@@ -178,8 +176,9 @@ export async function request<T>(
       ).toPromise();
   });
 
-  const closeOrResult = await Promise.race<T>([socketClose, requestResult]);
-  socket.removeListener('close', rejectOnSocketClose);
-
-  return closeOrResult;
+  try {
+    return Promise.race<T>([socketClose, requestResult]);
+  } finally {
+    socket.removeListener('close', rejectOnSocketClose);
+  }
 }
