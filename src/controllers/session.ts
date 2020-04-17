@@ -48,7 +48,7 @@ function removeSessionFromLobby(sessionToRemove: PlayerSession): void {
 
 function handlePlayerLeave(session: PlayerSession, observeOnStart: Subscription): void {
   session.socket.once('close', () => {
-    logger.info('player left lobby', session.playerId);
+    logger.info('player left lobby', { playerId: session.playerId });
     observeOnStart.unsubscribe();
     removeSessionFromLobby(session);
   });
@@ -73,9 +73,9 @@ async function onStartGameReceived(): Promise<void> {
     }));
     try {
       const gameResult = await playGame(players, lobby.lobbyApi, createDealer());
-      logger.info('game result', gameResult);
+      logger.info('game finished', { result: gameResult });
     } catch (error) {
-      logger.error(error);
+      logger.error('game error', { error });
     } finally {
       lobby.isIdle = true;
     }
@@ -94,7 +94,7 @@ function handlePlayerJoin(socket: WebSocket, subject: string): void {
   const session = createNewSession(socket, subject);
   handleKeepAlive(session);
   addSessionToLobby(session);
-  logger.info('player joined lobby', session.playerId);
+  logger.info('player joined lobby', { playerId: session.playerId });
   const observeOnStart = session.playerApi.onStartGame().subscribe(onStartGameReceived);
   handlePlayerLeave(session, observeOnStart);
 }

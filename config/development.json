@@ -11,5 +11,9 @@
     "authenticationTimeoutInMillis": 5000,
     "jwtSignSecret": "testsecret",
     "accessToken": "t"
+  },
+  "logging": {
+    "local": true,
+    "debug": true
   }
 }

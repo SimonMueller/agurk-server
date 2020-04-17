@@ -1,0 +1,6 @@
+{
+  "logging": {
+    "local": false,
+    "debug": false
+  }
+}

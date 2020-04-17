@@ -34,11 +34,11 @@ export default function (): http.Server {
         return verifiedJwt.sub;
       })
       .then((subject) => {
-        logger.info(`connection authenticated for subject '${subject}'. proceeding to lobby.`);
+        logger.info('connection authenticated. proceeding to lobby.', { subject });
         handleAuthenticatedConnection(socket, subject);
       })
       .catch(() => {
-        logger.warn('authentication for connection failed. closing connection.');
+        logger.warn('connection not authenticated. closing connection.');
         socket.close(SocketCloseCode.AUTHENTICATION_FAILED, 'Socket connection authentication failed.');
       });
   });

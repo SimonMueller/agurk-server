@@ -4,9 +4,10 @@ import logger from './logger';
 
 try {
   const httpServer = createServer();
-  httpServer.listen(config.get('server.port'), () => {
+  const port: number = config.get('server.port');
+  httpServer.listen(port, () => {
     const address = httpServer.address();
-    logger.info(`server listening on ${JSON.stringify(address)}`);
+    logger.info('server listening', address);
   });
 } catch (error) {
   logger.error(error);

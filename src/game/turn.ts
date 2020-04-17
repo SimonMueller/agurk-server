@@ -9,7 +9,7 @@ import logger from '../logger';
 import { validateTurn } from './rules';
 import { ERROR_RESULT_KIND, SUCCESS_RESULT_KIND } from './common';
 
-async function requestCards(player: Player, retriesLeft: number): Promise<Result<Error, Card[]>> {
+async function requestCards(player: Player, retriesLeft: number): Promise<Result<string, Card[]>> {
   if (player.api.isConnected()) {
     try {
       const cards = await player.api.requestCards(retriesLeft);
@@ -20,8 +20,8 @@ async function requestCards(player: Player, retriesLeft: number): Promise<Result
     }
   }
 
-  const error = Error('cannot request cards from disconnected player');
-  logger.error(error.message);
+  const error = 'cannot request cards from disconnected player';
+  logger.error(error, { playerId: player.id });
   return {
     kind: ERROR_RESULT_KIND,
     error,

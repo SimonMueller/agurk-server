@@ -27,7 +27,7 @@ router.post('/', (req, res) => {
       subject: emojiName,
       expiresIn: '5 minutes',
     });
-    logger.info(`generated signed token for ${emojiName}`);
+    logger.info('generated signed token', { subject: emojiName });
     return res.json({ jwt: signedJwt });
   }
 

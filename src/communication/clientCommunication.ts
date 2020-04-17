@@ -14,6 +14,10 @@ import { ExpectedMessage, MessageToBeValidated, MessageValidationError } from '.
 import { Result, SuccessResult } from '../types/result';
 import { ERROR_RESULT_KIND, SUCCESS_RESULT_KIND } from '../game/common';
 
+function wrapMessageForLogging(message: object | string): object {
+  return { payload: message };
+}
+
 function parseJsonMessage(message: string): Result<MessageValidationError, object> {
   try {
     const parsedObject = JSON.parse(message);
@@ -22,10 +26,12 @@ function parseJsonMessage(message: string): Result<MessageValidationError, objec
       data: parsedObject,
     };
   } catch (error) {
+    const errorMessage = 'received message is not in proper JSON format';
+    logger.error(errorMessage, wrapMessageForLogging(message));
     return {
       kind: ERROR_RESULT_KIND,
       error: {
-        message: 'received message is not in proper JSON format',
+        message: errorMessage,
       },
     };
   }
@@ -40,12 +46,12 @@ function validateMessageFormat(message: object): Result<MessageValidationError, 
   const { error, value } = messageFormatSchema.validate(message as MessageToBeValidated, { stripUnknown: true });
 
   if (error) {
-    logger.warn(error);
+    const errorMessage = 'validation of received message format failed';
+    logger.warn(errorMessage, wrapMessageForLogging(message));
+    return { kind: ERROR_RESULT_KIND, error: { message: errorMessage } };
   }
 
-  return error
-    ? { kind: ERROR_RESULT_KIND, error: { message: 'validation of received message format failed' } }
-    : { kind: SUCCESS_RESULT_KIND, data: value };
+  return { kind: SUCCESS_RESULT_KIND, data: value };
 }
 
 function validateMessageData<T>(
@@ -58,11 +64,12 @@ function validateMessageData<T>(
   const { error, value } = dataValidationSchema.validate(data as T, { stripUnknown: true });
 
   if (error) {
-    logger.warn(error);
+    const errorMessage = 'validation of received message data failed';
+    logger.warn(errorMessage, wrapMessageForLogging(actual));
+    return { kind: ERROR_RESULT_KIND, error: { message: errorMessage } };
   }
-  return error
-    ? { kind: ERROR_RESULT_KIND, error: { message: 'validation of received message data failed' } }
-    : { kind: SUCCESS_RESULT_KIND, data: value };
+
+  return { kind: SUCCESS_RESULT_KIND, data: value };
 }
 
 function ofSuccessResult<E, T>(result: Result<E, T>): result is SuccessResult<T> {
@@ -118,7 +125,7 @@ export function on<T>(
     .pipe(
       filterMessagesInInvalidFormatOrJson(),
       filter(actualMessage => actualMessage.name === expectedMessage.name),
-      tap(message => logger.info('registered message received', message)),
+      tap(message => logger.info('registered message received', wrapMessageForLogging(message))),
       filterMessagesNotMatchingExpectedMessage<T>(expectedMessage),
     );
 }
@@ -128,8 +135,8 @@ export function unicast<T extends Message>(
   message: T,
 ): void {
   send(socket, message)
-    .then(() => logger.info('unicast message sent', message))
-    .catch(() => logger.warn('cannot unicast message to closed socket', message));
+    .then(() => logger.info('unicast message sent', wrapMessageForLogging(message)))
+    .catch(() => logger.warn('cannot unicast message to closed socket', wrapMessageForLogging(message)));
 }
 
 export function broadcast<T extends Message>(
@@ -137,9 +144,10 @@ export function broadcast<T extends Message>(
   message: T,
 ): void {
   sockets.forEach((socket) => {
-    send(socket, message).catch(() => logger.warn('cannot broadcast message to closed socket', message));
+    send(socket, message).catch(() => logger
+      .warn('cannot broadcast message to closed socket', wrapMessageForLogging(message)));
   });
-  logger.info('broadcast message sent', message);
+  logger.info('broadcast message sent', wrapMessageForLogging(message));
 }
 
 export async function request<T>(
@@ -148,7 +156,7 @@ export async function request<T>(
   expectedMessage: ExpectedMessage,
   timeoutInMilliseconds: number,
 ): Promise<T> {
-  logger.info('sending request message to socket', requesterMessage);
+  logger.info('sending request message to socket', wrapMessageForLogging(requesterMessage));
 
   function rejectOnSocketClose(reject: (error: Error) => void): void {
     reject(Error('socket connection closed while requesting cards'));
@@ -163,7 +171,7 @@ export async function request<T>(
       .pipe(
         filterMessagesInInvalidFormatOrJson(),
         filter(actualMessage => actualMessage.name === expectedMessage.name),
-        tap(message => logger.info('requested message received', message)),
+        tap(message => logger.info('requested message received', wrapMessageForLogging(message))),
         filterMessagesNotMatchingExpectedMessage<T>(expectedMessage),
         timeout(timeoutInMilliseconds),
         take(1),

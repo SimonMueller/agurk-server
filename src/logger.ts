@@ -1,24 +1,13 @@
-const debug = Boolean(process.env.DEBUG);
+import winston from 'winston';
+import config from 'config';
 
-type Loggable = object | number | string | boolean;
+const DEBUG: boolean = config.get('logging.debug');
+const LOCAL: boolean = config.get('logging.local');
 
-export default {
-  debug(...args: Loggable[]): void {
-    if (debug) {
-      // eslint-disable-next-line no-console
-      console.debug(...args);
-    }
-  },
-  error(...args: Loggable[]): void {
-    // eslint-disable-next-line no-console
-    console.error(...args);
-  },
-  info(...args: Loggable[]): void {
-    // eslint-disable-next-line no-console
-    console.info(...args);
-  },
-  warn(...args: Loggable[]): void {
-    // eslint-disable-next-line no-console
-    console.warn(...args);
-  },
-};
+export default winston.createLogger({
+  level: DEBUG ? 'debug' : 'info',
+  format: LOCAL ? winston.format.prettyPrint({ depth: 10, colorize: true }) : winston.format.json(),
+  transports: [
+    new winston.transports.Console(),
+  ],
+});
