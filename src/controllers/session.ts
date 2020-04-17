@@ -84,7 +84,7 @@ async function onStartGameReceived(): Promise<void> {
 
 function handleKeepAlive(session: PlayerSession): void {
   const interval = setInterval(() => {
-    logger.info(`sending ping to ${session.playerId}`);
+    logger.info('sending ping to player', { playerId: session.playerId });
     session.socket.ping();
   }, PING_INTERVAL_IN_MILLIS);
   session.socket.once('close', () => clearInterval(interval));
