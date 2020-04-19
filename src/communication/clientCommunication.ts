@@ -148,8 +148,15 @@ export function broadcast<T extends Message>(
   logger.info('broadcast message sent', wrapMessageForLogging(message));
 }
 
-function rejectOnSocketClose(reject: (error: Error) => void): void {
-  reject(Error('socket connection closed while requesting cards'));
+
+function onSocketClose(emitter: NodeJS.EventEmitter, timeoutInMilliseconds: number): Promise<void> {
+  const addCloseHandler = (handler: () => void): NodeJS.EventEmitter => emitter.addListener('close', handler);
+  const removeCloseHandler = (handler: () => void): NodeJS.EventEmitter => emitter.removeListener('close', handler);
+  return fromEventPattern<void>(addCloseHandler, removeCloseHandler)
+    .pipe(
+      timeout(timeoutInMilliseconds),
+      take(1),
+    ).toPromise();
 }
 
 export async function request<T>(
@@ -160,12 +167,14 @@ export async function request<T>(
 ): Promise<T> {
   logger.info('sending request message to socket', wrapMessageForLogging(requesterMessage));
 
-  const addHandler = (handler: (message: string) => void): WebSocket => socket.addListener('message', handler);
-  const removeHandler = (handler: (message: string) => void): WebSocket => socket.removeListener('message', handler);
-
-  const socketClose = new Promise<T>((resolve, reject) => socket.once('close', () => rejectOnSocketClose(reject)));
+  const socketClose = onSocketClose(socket, timeoutInMilliseconds)
+    .then(() => Promise.reject(Error('socket connection closed while requesting cards')));
+  const addMessageHandler = (handler: (message: string) => void): WebSocket => socket
+    .addListener('message', handler);
+  const removeMessageHandler = (handler: (message: string) => void): WebSocket => socket
+    .removeListener('message', handler);
   const requestResult = send(socket, requesterMessage)
-    .then(() => fromEventPattern<string>(addHandler, removeHandler)
+    .then(() => fromEventPattern<string>(addMessageHandler, removeMessageHandler)
       .pipe(
         filterMessagesInInvalidFormatOrJson(),
         filter(actualMessage => actualMessage.name === expectedMessage.name),
@@ -173,8 +182,7 @@ export async function request<T>(
         filterMessagesNotMatchingExpectedMessage<T>(expectedMessage),
         timeout(timeoutInMilliseconds),
         take(1),
-      ).toPromise())
-    .finally(() => socket.removeListener('close', rejectOnSocketClose));
+      ).toPromise());
 
   return Promise.race<T>([socketClose, requestResult]);
 }

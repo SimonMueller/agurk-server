@@ -354,4 +354,47 @@ describe('send request message and expect response', () => {
 
     await expect(resultPromise).rejects.toThrow('closed while requesting cards');
   });
+
+  test('cleans up message and close listeners when reject while requesting', async () => {
+    const socket = createWebsocket();
+
+    const resultPromise = request(
+      socket,
+      REQUESTER_MESSAGE_TYPE,
+      EXPECTED_MESSAGE_TYPE,
+      REQUEST_TIMEOUT_IN_MILILIS,
+    );
+    await flushAllPromises();
+
+    socket.emit('close');
+
+    jest.runAllTimers();
+
+    await expect(resultPromise).rejects.toThrow();
+    expect(socket.listenerCount('message')).toBe(0);
+    expect(socket.listenerCount('close')).toBe(0);
+  });
+
+  test('cleans up message and close listeners when resolve', async () => {
+    const socket = createWebsocket();
+
+    const resultPromise = request(
+      socket,
+      REQUESTER_MESSAGE_TYPE,
+      EXPECTED_MESSAGE_TYPE,
+      REQUEST_TIMEOUT_IN_MILILIS,
+    );
+    await flushAllPromises();
+
+    socket.emit('message', JSON.stringify({
+      name: EXPECTED_MESSAGE_TYPE.name,
+      data: [createSuitCard(3, Suits.SPADES)],
+    }));
+
+    jest.runAllTimers();
+
+    await expect(resultPromise).resolves.toBeDefined();
+    expect(socket.listenerCount('message')).toBe(0);
+    expect(socket.listenerCount('close')).toBe(0);
+  });
 });
