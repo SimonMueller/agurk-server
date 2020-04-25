@@ -1,6 +1,6 @@
 import WebSocket from 'ws';
 import {
-  MessageName, OutPlayer, Penalty, PlayerId, ValidatedTurn, Error,
+  MessageName, OutPlayer, Penalty, PlayerId, ValidatedTurn,
 } from 'agurk-shared';
 import { partial } from 'ramda';
 import { broadcast } from './clientCommunication';
@@ -32,10 +32,10 @@ function broadcastSuccessEndGame(sockets: WebSocket[], winner: PlayerId): void {
   return broadcast(sockets, message);
 }
 
-function broadcastErrorEndGame(sockets: WebSocket[], error: Error): void {
+function broadcastErrorEndGame(sockets: WebSocket[], errorMessage: string): void {
   const message = {
     name: MessageName.BROADCAST_END_GAME,
-    data: { isValid: false, error },
+    data: { isValid: false, errorMessage },
   } as const;
   return broadcast(sockets, message);
 }

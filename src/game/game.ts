@@ -97,7 +97,7 @@ function createInvalidPlayerCountErrorGameResult(players: Player[]): GameResult 
 function broadcastGameResult(gameResult: GameResult, roomApi: RoomApi): void {
   return gameResult.kind === SUCCESS_RESULT_KIND
     ? roomApi.broadcastSuccessEndGame(gameResult.data.winner)
-    : roomApi.broadcastErrorEndGame({ message: gameResult.error.message });
+    : roomApi.broadcastErrorEndGame(gameResult.error.message);
 }
 
 async function playGame(roomApi: RoomApi, players: Player[], dealer: Dealer): Promise<GameResult> {

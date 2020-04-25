@@ -1,5 +1,5 @@
 import {
-  PlayerId, ValidatedTurn, Penalty, OutPlayer, Error,
+  PlayerId, ValidatedTurn, Penalty, OutPlayer,
 } from 'agurk-shared';
 
 export interface RoomApi {
@@ -15,6 +15,6 @@ export interface RoomApi {
   ) => void;
   readonly broadcastEndRound: (penalties: Penalty[], outPlayers: OutPlayer[], winner?: PlayerId) => void;
   readonly broadcastSuccessEndGame: (winner: PlayerId) => void;
-  readonly broadcastErrorEndGame: (error: Error) => void;
+  readonly broadcastErrorEndGame: (errorMessage: string) => void;
   readonly broadcastLobbyPlayers: (players: PlayerId[]) => void;
 }
