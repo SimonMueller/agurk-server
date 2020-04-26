@@ -10,11 +10,7 @@
     "arrow-parens": [2, "as-needed", { "requireForBlockBody": true }],
     "func-style": [2, "declaration", { "allowArrowFunctions": true }],
     "import/extensions": [
-      "error",
-      "ignorePackages",
-      {
-        "js": "never",
-        "jsx": "never",
+      "error", {
         "ts": "never",
         "tsx": "never"
       }
