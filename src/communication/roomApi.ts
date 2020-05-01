@@ -32,6 +32,14 @@ function broadcastSuccessEndGame(sockets: WebSocket[], winner: PlayerId): void {
   return broadcast(sockets, message);
 }
 
+function broadcastOutPlayerAfterTurn(sockets: WebSocket[], outPlayer: OutPlayer): void {
+  const message = {
+    name: MessageName.BROADCAST_OUT_PLAYER_AFTER_TURN,
+    data: outPlayer,
+  } as const;
+  return broadcast(sockets, message);
+}
+
 function broadcastErrorEndGame(sockets: WebSocket[], errorMessage: string): void {
   const message = {
     name: MessageName.BROADCAST_END_GAME,
@@ -117,6 +125,7 @@ export default function create(sockets: WebSocket[]): RoomApi {
     broadcastStartRound: partial(broadcastStartRound, [sockets]),
     broadcastStartCycle: partial(broadcastStartCycle, [sockets]),
     broadcastStartPlayerTurn: partial(broadcastStartPlayerTurn, [sockets]),
+    broadcastOutPlayerAfterTurn: partial(broadcastOutPlayerAfterTurn, [sockets]),
     broadcastPlayerTurn: partial(broadcastPlayerTurn, [sockets]),
     broadcastEndCycle: partial(broadcastEndCycle, [sockets]),
     broadcastEndRound: partial(broadcastEndRound, [sockets]),

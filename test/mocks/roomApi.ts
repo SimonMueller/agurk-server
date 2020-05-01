@@ -5,6 +5,7 @@ export default (): jest.Mocked<RoomApi> => ({
   broadcastStartRound: jest.fn(),
   broadcastStartCycle: jest.fn(),
   broadcastStartPlayerTurn: jest.fn(),
+  broadcastOutPlayerAfterTurn: jest.fn(),
   broadcastPlayerTurn: jest.fn(),
   broadcastEndCycle: jest.fn(),
   broadcastEndRound: jest.fn(),

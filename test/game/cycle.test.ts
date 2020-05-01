@@ -1,12 +1,11 @@
 import {
-  createJokerCard, createSuitCard, Colors, Suits, Card, ValidatedTurn,
+  createJokerCard, createSuitCard, Colors, Suits, Card, ValidatedTurn, OutPlayer,
 } from 'agurk-shared';
 import PlayerFactory from '../factories/player';
 import createMockedRoomApi from '../mocks/roomApi';
 import playCycle from '../../src/game/cycle';
 import { RoundState } from '../../src/types/round';
 import { Hand } from '../../src/types/hand';
-import PlayerIdFactory from '../factories/playerId';
 
 describe('play cycle', () => {
   test('valid first cycle result', async () => {
@@ -97,11 +96,10 @@ describe('play cycle', () => {
   });
 
   test('valid turn after retry', async () => {
-    const playerIds = PlayerIdFactory.buildList(1);
     const invalidPlayedCards: Card[] = [createJokerCard(Colors.BLACK)];
     const validPlayedCards: Card[] = [createSuitCard(3, Suits.SPADES)];
     const playerHand: Hand = [createSuitCard(3, Suits.SPADES)];
-    const player = PlayerFactory.build({ id: playerIds[0] });
+    const player = PlayerFactory.build();
     const roundState: RoundState = {
       cycles: [],
       outPlayers: [],
@@ -133,8 +131,7 @@ describe('play cycle', () => {
   });
 
   test('valid turn with card from invalid turn from previous cycle', async () => {
-    const playerIds = PlayerIdFactory.buildList(1);
-    const player = PlayerFactory.build({ id: playerIds[0] });
+    const player = PlayerFactory.build();
     const invalidTurn: ValidatedTurn = {
       playerId: player.id,
       cards: [createSuitCard(3, Suits.SPADES), createSuitCard(5, Suits.DIAMONDS)],
@@ -154,7 +151,7 @@ describe('play cycle', () => {
           [player.id]: playerHand,
         },
         outPlayers: [],
-        playerIds,
+        playerIds: [player.id],
         turns: [invalidTurn, validTurn],
         highestTurns: [validTurn],
         lowestTurns: [validTurn],
@@ -178,5 +175,32 @@ describe('play cycle', () => {
         valid: true,
       },
     ]);
+  });
+
+  test('player is out after cycle because playing card not from hand', async () => {
+    const player1Hand: Hand = [createSuitCard(9, Suits.CLUBS)];
+    const player1 = PlayerFactory.build();
+    const roomApi = createMockedRoomApi();
+
+    player1.api.requestCards.mockResolvedValue([createJokerCard(Colors.BLACK)]);
+
+    const roundState: RoundState = {
+      cycles: [],
+      outPlayers: [],
+      initialHands: {
+        [player1.id]: player1Hand,
+      },
+      playerIds: [player1.id],
+    };
+    const playerIds = [player1];
+
+    const cycle = await playCycle(playerIds, roundState, roomApi);
+
+    const expectedOutPlayer: OutPlayer = {
+      id: player1.id,
+      reason: 'not following the game rules',
+    };
+    expect(roomApi.broadcastOutPlayerAfterTurn).toHaveBeenCalledWith(expectedOutPlayer);
+    expect(cycle.outPlayers).toEqual([expectedOutPlayer]);
   });
 });

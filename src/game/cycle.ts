@@ -3,7 +3,7 @@ import {
   ascend, chain, descend, differenceWith, head, identity, sort,
 } from 'ramda';
 import {
-  Card, cardEquals, InvalidTurn, PlayerId, Rank, ValidatedTurn, ValidTurn,
+  Card, cardEquals, InvalidTurn, OutPlayer, PlayerId, Rank, ValidatedTurn, ValidTurn,
 } from 'agurk-shared';
 import { Cycle, CycleState } from '../types/cycle';
 import { Hand, HandsByPlayerId } from '../types/hand';
@@ -81,15 +81,27 @@ function filterAvailableCardsFromPlayerHands(
   }, {});
 }
 
-function addErrorTurnPlayerToOutPlayers(previousCycleState: CycleState, invalidTurn: InvalidTurn): CycleState {
+function createOutPlayerFrom(invalidTurn: InvalidTurn): OutPlayer {
+  return {
+    id: invalidTurn.playerId,
+    reason: invalidTurn.invalidReason,
+  };
+}
+
+function addOutPlayerAfterInvalidTurn(
+  previousCycleState: CycleState,
+  invalidTurn: InvalidTurn,
+  roomApi: RoomApi,
+): CycleState {
+  const outPlayer = createOutPlayerFrom(invalidTurn);
+
+  roomApi.broadcastOutPlayerAfterTurn(outPlayer);
+
   return {
     ...previousCycleState,
     outPlayers: [
       ...previousCycleState.outPlayers,
-      {
-        id: invalidTurn.playerId,
-        reason: invalidTurn.invalidReason,
-      },
+      outPlayer,
     ],
   };
 }
@@ -104,10 +116,10 @@ function addTurnToCycle(previousCycleState: CycleState, turn: ValidatedTurn): Cy
   };
 }
 
-function finishPlayerTurn(turn: ValidatedTurn, cycleState: CycleState): CycleState {
+function finishPlayerTurn(turn: ValidatedTurn, cycleState: CycleState, roomApi: RoomApi): CycleState {
   return turn.valid
     ? cycleState
-    : addErrorTurnPlayerToOutPlayers(cycleState, turn);
+    : addOutPlayerAfterInvalidTurn(cycleState, turn, roomApi);
 }
 
 async function playTurnWithRetry(
@@ -121,7 +133,7 @@ async function playTurnWithRetry(
   const shouldRetryTurn = !turn.valid && retriesLeft !== 0 && player.api.isConnected();
   return shouldRetryTurn
     ? playTurnWithRetry(player, updatedCycleState, roomApi, retriesLeft - 1)
-    : finishPlayerTurn(turn, updatedCycleState);
+    : finishPlayerTurn(turn, updatedCycleState, roomApi);
 }
 
 async function getCycleStateAfterTurn(
