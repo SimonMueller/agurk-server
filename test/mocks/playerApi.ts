@@ -5,5 +5,5 @@ export default (): jest.Mocked<PlayerApi> => ({
   isConnected: jest.fn(() => true),
   dealCards: jest.fn(),
   requestCards: jest.fn(),
-  availableCardsInHand: jest.fn(),
+  sendAvailableCardsInHand: jest.fn(),
 });

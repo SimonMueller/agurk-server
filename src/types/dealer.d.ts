@@ -1,6 +1,6 @@
 import { PlayerId, Card } from 'agurk-shared';
 import { CardCountToDeal } from './game';
-import { PlayerHands } from './hand';
+import { HandsByPlayerId } from './hand';
 
 export type SamplePlayerId = (playerIds: PlayerId[]) => PlayerId | undefined;
 
@@ -9,6 +9,6 @@ export interface Dealer {
     playerIds: PlayerId[],
     cardsToOmit: Card[],
     cardCountToDeal: CardCountToDeal,
-  ) => PlayerHands;
+  ) => HandsByPlayerId;
   readonly samplePlayerId: SamplePlayerId;
 }

@@ -1,5 +1,5 @@
 import {
-  Card, InvalidTurn, PlayerId, ValidatedTurn,
+  Card, cardEquals, InvalidTurn, PlayerId, ValidatedTurn,
 } from 'agurk-shared';
 import { Result } from '../types/result';
 import { RoomApi } from '../types/room';
@@ -8,6 +8,7 @@ import { CycleState } from '../types/cycle';
 import logger from '../logger';
 import { validateTurn } from './rules';
 import { ERROR_RESULT_KIND, SUCCESS_RESULT_KIND } from './common';
+import { Hand } from '../types/hand';
 
 async function requestCards(player: Player, retriesLeft: number): Promise<Result<string, Card[]>> {
   if (player.api.isConnected()) {
@@ -43,6 +44,12 @@ function createInvalidTurnWithNoCardsPlayed(playerId: string): InvalidTurn {
   };
 }
 
+function getPlayerHandAfterTurn(hand: Hand, turn: ValidatedTurn): Hand {
+  return turn.valid
+    ? hand.filter(cardInHand => !turn.cards.find(turnCard => cardEquals(turnCard, cardInHand)))
+    : hand;
+}
+
 export default async function play(
   player: Player,
   cycleState: CycleState,
@@ -59,6 +66,9 @@ export default async function play(
     ? createInvalidTurnWithNoCardsPlayed(playerId)
     : validatePlayedCardsInTurn(playedCardsResult.data, playerId, cycleState);
 
+  const playerHandAfterTurn = getPlayerHandAfterTurn(cycleState.hands[player.id], validatedTurn);
+
+  player.api.sendAvailableCardsInHand(playerHandAfterTurn);
   roomApi.broadcastPlayerTurn(validatedTurn);
 
   return validatedTurn;

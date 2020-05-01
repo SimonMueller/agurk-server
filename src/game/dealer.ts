@@ -4,7 +4,7 @@ import { PlayerId, Card, cardEquals } from 'agurk-shared';
 import { differenceWith } from 'ramda';
 import { Deck } from '../types/deck';
 import { CardCountToDeal } from '../types/game';
-import { PlayerHands } from '../types/hand';
+import { HandsByPlayerId } from '../types/hand';
 import { create as createDeck } from './deck';
 import { Dealer } from '../types/dealer';
 
@@ -16,7 +16,7 @@ function createPlayerHands(
   deck: Deck,
   playerIds: PlayerId[],
   cardCountToDeal: number,
-): PlayerHands {
+): HandsByPlayerId {
   return playerIds.reduce((hands, playerId, index) => {
     const startingIndex = cardCountToDeal * index;
     const cards = deck.slice(startingIndex, startingIndex + cardCountToDeal);
@@ -30,7 +30,7 @@ function createHandsForPlayerIds(
   playerIds: PlayerId[],
   cardsToOmit: Card[],
   cardCountToDeal: CardCountToDeal,
-): PlayerHands {
+): HandsByPlayerId {
   const initialDeck = createDeck();
   const filteredDeck = filterCardsFromDeck(initialDeck, cardsToOmit);
   const shuffledDeck = shuffleDeck(filteredDeck);

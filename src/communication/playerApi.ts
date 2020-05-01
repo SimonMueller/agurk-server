@@ -64,6 +64,6 @@ export default function create(socket: WebSocket): PlayerApi {
     isConnected: (): boolean => socket.readyState === WebSocket.OPEN,
     dealCards: partial(dealCards, [socket]),
     requestCards: partial(requestCards, [socket]),
-    availableCardsInHand: partial(availableCardsInHand, [socket]),
+    sendAvailableCardsInHand: partial(availableCardsInHand, [socket]),
   };
 }

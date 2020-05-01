@@ -1,11 +1,11 @@
 import {
   OutPlayer, PlayerId, ValidatedTurn, ValidTurn,
 } from 'agurk-shared';
-import { PlayerHands } from './hand';
+import { HandsByPlayerId } from './hand';
 
 export interface CycleState {
   readonly turns: ValidatedTurn[];
-  readonly hands: PlayerHands;
+  readonly hands: HandsByPlayerId;
   readonly playerIds: PlayerId[];
   readonly outPlayers: OutPlayer[];
 }

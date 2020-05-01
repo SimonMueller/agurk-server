@@ -108,6 +108,7 @@ describe('play turn', () => {
 
   test('throws on error while requesting cards', async () => {
     const player = PlayerFactory.build();
+    const playerHand: Hand = [createSuitCard(3, Suits.SPADES)];
     player.api.requestCards.mockRejectedValueOnce(Error('player error'));
     const mockedRoomApi = createMockedRoomApi();
 
@@ -115,7 +116,9 @@ describe('play turn', () => {
       outPlayers: [],
       turns: [],
       playerIds: [],
-      hands: {},
+      hands: {
+        [player.id]: playerHand,
+      },
     }, mockedRoomApi, 0);
 
     expect(mockedRoomApi.broadcastPlayerTurn).toHaveBeenCalledWith(validatedTurn);
@@ -125,5 +128,46 @@ describe('play turn', () => {
       valid: false,
       invalidReason: 'no cards played',
     });
+  });
+
+  test('unicast unchanged player hand after invalid turn', async () => {
+    const playerIds = PlayerIdFactory.buildList(3);
+    const playerHand: Hand = [
+      createSuitCard(10, Suits.DIAMONDS),
+      createJokerCard(Colors.WHITE),
+    ];
+    const player = PlayerFactory.build({ id: playerIds[0] });
+    player.api.requestCards.mockResolvedValueOnce([createSuitCard(10, Suits.DIAMONDS), createJokerCard(Colors.WHITE)]);
+    const cycleState: CycleState = {
+      turns: [],
+      hands: {
+        [player.id]: playerHand,
+      },
+      outPlayers: [],
+      playerIds,
+    };
+
+    await playTurn(player, cycleState, createMockedRoomApi(), 0);
+
+    expect(player.api.sendAvailableCardsInHand).toHaveBeenCalledWith(playerHand);
+  });
+
+  test('unicast filtered player hand after valid turn', async () => {
+    const playerIds = PlayerIdFactory.buildList(3);
+    const playerHand: Hand = [createSuitCard(10, Suits.DIAMONDS)];
+    const player = PlayerFactory.build({ id: playerIds[0] });
+    player.api.requestCards.mockResolvedValueOnce([createSuitCard(10, Suits.DIAMONDS)]);
+    const cycleState: CycleState = {
+      turns: [],
+      hands: {
+        [player.id]: playerHand,
+      },
+      outPlayers: [],
+      playerIds,
+    };
+
+    await playTurn(player, cycleState, createMockedRoomApi(), 0);
+
+    expect(player.api.sendAvailableCardsInHand).toHaveBeenCalledWith([]);
   });
 });

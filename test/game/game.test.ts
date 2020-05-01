@@ -8,7 +8,7 @@ import playGame from '../../src/game/game';
 import createMockedRoomApi from '../mocks/roomApi';
 import { ErrorResult, SuccessResult } from '../../src/types/result';
 import { Game, GameError } from '../../src/types/game';
-import { PlayerHands } from '../../src/types/hand';
+import { HandsByPlayerId } from '../../src/types/hand';
 
 describe('play game', () => {
   test('game with only 1 player cannot be started', async () => {
@@ -38,7 +38,7 @@ describe('play game', () => {
     const players = [player1, player2];
     const playerIds = [player1.id, player2.id];
     const roomApi = createMockedRoomApi();
-    const initialHandsRound1: PlayerHands = {
+    const initialHandsRound1: HandsByPlayerId = {
       [player1.id]: [
         createSuitCard(2, Suits.HEARTS),
         createSuitCard(3, Suits.HEARTS),
@@ -59,7 +59,7 @@ describe('play game', () => {
       ],
     };
 
-    const initialHandsRound2: PlayerHands = {
+    const initialHandsRound2: HandsByPlayerId = {
       [player1.id]: [
         createSuitCard(3, Suits.SPADES),
         createSuitCard(4, Suits.SPADES),
@@ -136,7 +136,7 @@ describe('play game', () => {
     const player2 = PlayerFactory.build();
     const players = [player1, player2];
     const roomApi = createMockedRoomApi();
-    const initialHandsRound1: PlayerHands = {
+    const initialHandsRound1: HandsByPlayerId = {
       [player1.id]: [createSuitCard(8, Suits.HEARTS)],
       [player2.id]: [createSuitCard(2, Suits.DIAMONDS)],
     };

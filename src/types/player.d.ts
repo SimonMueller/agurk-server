@@ -6,7 +6,7 @@ export interface PlayerApi {
   readonly isConnected: () => boolean;
   readonly dealCards: (cards: Card[]) => void;
   readonly requestCards: (retriesLeft: number) => Promise<Card[]>;
-  readonly availableCardsInHand: (cards: Card[]) => void;
+  readonly sendAvailableCardsInHand: (cards: Card[]) => void;
 }
 
 export interface Player {

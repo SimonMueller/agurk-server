@@ -3,10 +3,10 @@ import {
   ascend, chain, descend, differenceWith, head, identity, sort,
 } from 'ramda';
 import {
-  PlayerId, Card, Rank, ValidatedTurn, cardEquals, InvalidTurn, ValidTurn,
+  Card, cardEquals, InvalidTurn, PlayerId, Rank, ValidatedTurn, ValidTurn,
 } from 'agurk-shared';
 import { Cycle, CycleState } from '../types/cycle';
-import { Hand, PlayerHands } from '../types/hand';
+import { Hand, HandsByPlayerId } from '../types/hand';
 import { Player } from '../types/player';
 import { RoomApi } from '../types/room';
 import { RoundState } from '../types/round';
@@ -61,20 +61,19 @@ const findHighestRankTurns = (turns: ValidTurn[]): ValidTurn[] => {
     : [];
 };
 
-function filterUnplayedCardsFromHand(turns: ValidTurn[], hand: Hand): Card[] {
-  const cyclePlayedCards = chain(mapTurnCards, turns);
+function filterAvailableCardsFromPlayerHand(hand: Hand, playerId: PlayerId, turns: ValidTurn[]): Card[] {
+  const playerTurns = turns.filter(turn => turn.playerId === playerId);
+  const cyclePlayedCards = chain(mapTurnCards, playerTurns);
   return differenceWith(cardEquals, hand, cyclePlayedCards);
 }
 
 function filterAvailableCardsFromPlayerHands(
   playerIds: PlayerId[],
-  hands: PlayerHands,
+  hands: HandsByPlayerId,
   turns: ValidTurn[],
-): PlayerHands {
+): HandsByPlayerId {
   return playerIds.reduce((cardsInHandAcc, playerId) => {
-    const hand = hands[playerId];
-    const playerTurns = turns.filter(turn => turn.playerId === playerId);
-    const cards = filterUnplayedCardsFromHand(playerTurns, hand);
+    const cards = filterAvailableCardsFromPlayerHand(hands[playerId], playerId, turns);
     return {
       ...cardsInHandAcc,
       [playerId]: cards,
@@ -144,7 +143,7 @@ function turnsToCycleState(roomApi: RoomApi) {
 async function playTurnsInCycle(
   players: Player[],
   roomApi: RoomApi,
-  hands: PlayerHands,
+  hands: HandsByPlayerId,
   playerIds: PlayerId[],
 ): Promise<CycleState> {
   return players.reduce(turnsToCycleState(roomApi),
