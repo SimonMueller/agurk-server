@@ -81,7 +81,7 @@ function filterAvailableCardsFromPlayerHands(
   }, {});
 }
 
-function addErrorTurnPlayerIdToOutPlayers(previousCycleState: CycleState, invalidTurn: InvalidTurn): CycleState {
+function addErrorTurnPlayerToOutPlayers(previousCycleState: CycleState, invalidTurn: InvalidTurn): CycleState {
   return {
     ...previousCycleState,
     outPlayers: [
@@ -107,7 +107,7 @@ function addTurnToCycle(previousCycleState: CycleState, turn: ValidatedTurn): Cy
 function finishPlayerTurn(turn: ValidatedTurn, cycleState: CycleState): CycleState {
   return turn.valid
     ? cycleState
-    : addErrorTurnPlayerIdToOutPlayers(cycleState, turn);
+    : addErrorTurnPlayerToOutPlayers(cycleState, turn);
 }
 
 async function playTurnWithRetry(
