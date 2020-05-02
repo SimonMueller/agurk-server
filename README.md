@@ -21,6 +21,11 @@ This project is still work in progress ...
 ### Test
 `npm test`
 
+### Configuration
+
+Configuration can be found in the `config/` directory. The names of the files correspond to the environment where they are loaded.
+Production config is set via environment variables specified in `custom-environment-variables.json`.
+
 # Rules
 
 1. The game is played with Bridge playing cards (52 Cards) & 3 Jokers => 55 Cards in total.
