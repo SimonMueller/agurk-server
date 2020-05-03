@@ -22,8 +22,8 @@
 ### Configuration
 
 Configuration can be found in the `config/` directory. The names of the files correspond to the environment where they are loaded.
-Production config is set via environment variables specified in `custom-environment-variables.json`. Please note that `npm start` will
-expect the environment variables to be set. To run in development mode use `npm run watch`.
+Production config can be set via environment variables specified in `custom-environment-variables.json`.
+If `NODE_ENV ` is not set, a default value of development is used.
 
 # Rules
 
