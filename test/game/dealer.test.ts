@@ -31,7 +31,7 @@ describe('create player hands', () => {
     expect(createHandsForPlayerIds([], [], 2)).toEqual({});
   });
 
-  test('hand for every player present', () => {
+  test('for every player id present', () => {
     const playerIds = PlayerIdFactory.buildList(5);
     const { createHandsForPlayerIds } = createDealer();
 
@@ -45,7 +45,7 @@ describe('create player hands', () => {
     expect(playerHands).toHaveProperty(playerIds[4]);
   });
 
-  test('each player hand has the same amount of cards', () => {
+  test('each has the same amount of cards', () => {
     const playerIds = PlayerIdFactory.buildList(3);
     const { createHandsForPlayerIds } = createDealer();
 
@@ -56,13 +56,13 @@ describe('create player hands', () => {
     expect(playerHands[playerIds[2]]).toHaveLength(7);
   });
 
-  test('player hands not to have unknown playerId property', () => {
+  test('only has properties from given player id\'s', () => {
     const playerIds = PlayerIdFactory.buildList(2);
     const { createHandsForPlayerIds } = createDealer();
 
     const playerHands = createHandsForPlayerIds(playerIds, [], 2);
 
-    expect(playerHands).not.toHaveProperty('somerandomplayerid');
+    expect(Object.keys(playerHands)).toEqual(playerIds);
   });
 
   test(`if the amount of cards to be dealt is not available from the deck because
