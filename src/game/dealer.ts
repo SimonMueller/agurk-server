@@ -12,16 +12,23 @@ function filterCardsFromDeck(deck: Deck, penaltyCards: Card[]): Deck {
   return differenceWith(cardEquals, deck, penaltyCards);
 }
 
+function toHandsByPlayerId(cardCountToDeal: number, deck: Card[]) {
+  return (hands: HandsByPlayerId, playerId: PlayerId, index: number): HandsByPlayerId => {
+    const startingIndex = cardCountToDeal * index;
+    const cards = deck.slice(startingIndex, startingIndex + cardCountToDeal);
+    return { ...hands, [playerId]: cards };
+  };
+}
+
 function createPlayerHands(
   deck: Deck,
   playerIds: PlayerId[],
   cardCountToDeal: number,
 ): HandsByPlayerId {
-  return playerIds.reduce((hands, playerId, index) => {
-    const startingIndex = cardCountToDeal * index;
-    const cards = deck.slice(startingIndex, startingIndex + cardCountToDeal);
-    return { ...hands, [playerId]: cards };
-  }, {});
+  const isCardCountToDealAvailable = deck.length - (playerIds.length * cardCountToDeal) >= 0;
+  return isCardCountToDealAvailable
+    ? playerIds.reduce(toHandsByPlayerId(cardCountToDeal, deck), {})
+    : createPlayerHands(deck, playerIds, cardCountToDeal - 1);
 }
 
 const shuffleDeck = (deck: Deck): Deck => shuffle(deck);
