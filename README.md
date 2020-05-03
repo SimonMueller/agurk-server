@@ -48,3 +48,5 @@ If `NODE_ENV ` is not set, a default value of `development` is used.
 19. If a player leaves before a cycle was started, he will be removed from the game and will not participate in any round or cycle anymore.
 20. If multiple players finish with the same card and a different penalty higher than 21 the one with the lower penalty wins the game.
 21. If multiple players finish with the same card and the same penalty higher than 21 the winner is chosen by random.
+22. If the dealer cannot deal the amount of cards corresponding to the rounds played because there already exist too many penalty cards he decreases the amount to be dealt until he is able to deal the same amount to each player.
+
