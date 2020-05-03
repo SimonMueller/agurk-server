@@ -25,7 +25,7 @@ describe('sample player id', () => {
 });
 
 describe('create player hands', () => {
-  test('empty playerId and cards to omit in second round', () => {
+  test('from empty playerIds and empty cards to omit', () => {
     const { createHandsForPlayerIds } = createDealer();
 
     expect(createHandsForPlayerIds([], [], 2)).toEqual({});
