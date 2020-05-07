@@ -190,9 +190,8 @@ export default async function (
 
   roomApi.broadcastEndCycle(cycleState.outPlayers, highestTurnPlayers, DELAY_AFTER_CYCLE_IN_MILLIS);
 
-  return delay({
-    ...cycleState,
-    highestTurns,
-    lowestTurns,
-  }, DELAY_AFTER_CYCLE_IN_MILLIS);
+  const cycle = { ...cycleState, highestTurns, lowestTurns };
+  return isLastOfRound
+    ? cycle
+    : delay(cycle, DELAY_AFTER_CYCLE_IN_MILLIS);
 }
