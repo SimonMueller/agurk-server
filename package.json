@@ -58,8 +58,8 @@
     "jsonwebtoken": "^8.5.1",
     "lodash.sample": "^4.2.1",
     "lodash.shuffle": "^4.2.0",
+    "rxjs": "^6.6.2",
     "ramda": "^0.27.1",
-    "rxjs": "^6.6.0",
     "uuid": "^7.0.3",
     "winston": "^3.3.3",
     "ws": "^7.3.1"
