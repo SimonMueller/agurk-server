@@ -15,8 +15,8 @@
   "author": "Simon Müller",
   "license": "MIT",
   "engines": {
-    "node": "^12.9.0",
-    "npm": "^6.10.0"
+    "node": "^14.6.0",
+    "npm": "^6.14.0"
   },
   "devDependencies": {
     "@types/config": "^0.0.34",
