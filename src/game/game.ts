@@ -117,7 +117,7 @@ async function playGame(roomApi: RoomApi, players: Player[], dealer: Dealer): Pr
   return gameResult;
 }
 
-export default async function (
+export default async function play(
   players: Player[],
   roomApi: RoomApi,
   dealer: Dealer,

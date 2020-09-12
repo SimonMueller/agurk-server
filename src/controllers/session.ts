@@ -12,15 +12,6 @@ import { RoomApi } from '../types/room';
 import { PlayerApi } from '../types/player';
 import SocketCloseCode from '../communication/socketCloseCode';
 
-const PING_INTERVAL_IN_MILLIS: number = config.get('server.pingIntervalInMillis');
-
-// TODO: consistent naming of room, lobby and session
-const lobby: Lobby = {
-  isIdle: true,
-  sessions: [],
-  lobbyApi: createRoomApi([]),
-};
-
 interface PlayerSession {
   readonly id: string;
   readonly socket: WebSocket;
@@ -33,6 +24,15 @@ interface Lobby {
   sessions: PlayerSession[];
   lobbyApi: RoomApi;
 }
+
+const PING_INTERVAL_IN_MILLIS: number = config.get('server.pingIntervalInMillis');
+
+// TODO: consistent naming of room, lobby and session
+const lobby: Lobby = {
+  isIdle: true,
+  sessions: [],
+  lobbyApi: createRoomApi([]),
+};
 
 function addSessionToLobby(sessionToAdd: PlayerSession): void {
   lobby.sessions.push(sessionToAdd);
@@ -99,7 +99,7 @@ function handlePlayerJoin(socket: WebSocket, subject: string): void {
   handlePlayerLeave(session, observeOnStart);
 }
 
-export default function (socket: WebSocket, subject: string): void {
+export default function handlePlayer(socket: WebSocket, subject: string): void {
   if (lobby.isIdle) {
     return handlePlayerJoin(socket, subject);
   }

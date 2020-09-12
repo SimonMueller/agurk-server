@@ -167,7 +167,7 @@ async function playTurnsInCycle(
     }));
 }
 
-export default async function (
+export default async function play(
   players: Player[],
   roundState: RoundState,
   roomApi: RoomApi,

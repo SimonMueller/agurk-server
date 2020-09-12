@@ -12,11 +12,11 @@ import { ExpectedMessage, MessageToBeValidated, MessageValidationError } from '.
 import { Result, SuccessResult } from '../types/result';
 import { ERROR_RESULT_KIND, SUCCESS_RESULT_KIND } from '../game/common';
 
-function wrapMessageForLogging(message: object | string): object {
+function wrapMessageForLogging(message: unknown | string): { payload: unknown } {
   return { payload: message };
 }
 
-function parseJsonMessage(message: string): Result<MessageValidationError, object> {
+function parseJsonMessage(message: string): Result<MessageValidationError, Record<string, unknown>> {
   try {
     const parsedObject = JSON.parse(message);
     return {
@@ -35,13 +35,13 @@ function parseJsonMessage(message: string): Result<MessageValidationError, objec
   }
 }
 
-function validateMessageFormat(message: object): Result<MessageValidationError, MessageToBeValidated> {
+function validateMessageFormat(message: Record<string, unknown>): Result<MessageValidationError, MessageToBeValidated> {
   const messageFormatSchema = object().keys({
     name: string().required(),
     data: any(),
   });
 
-  const { error, value } = messageFormatSchema.validate(message as MessageToBeValidated, { stripUnknown: true });
+  const { error, value } = messageFormatSchema.validate(message, { stripUnknown: true });
 
   if (error) {
     const errorMessage = 'validation of received message format failed';
@@ -104,7 +104,7 @@ function sendMessageToOpenSocket(socket: WebSocket, jsonMessage: string): Promis
   });
 }
 
-function send<T>(socket: WebSocket, message: Message): Promise<void> {
+function send(socket: WebSocket, message: Message): Promise<void> {
   if (socket.readyState !== WebSocket.OPEN) {
     return Promise.reject();
   }
@@ -147,7 +147,6 @@ export function broadcast<T extends Message>(
   });
   logger.info('broadcast message sent', wrapMessageForLogging(message));
 }
-
 
 function onSocketClose(emitter: NodeJS.EventEmitter, timeoutInMilliseconds: number): Promise<void> {
   const addCloseHandler = (handler: () => void): NodeJS.EventEmitter => emitter.addListener('close', handler);

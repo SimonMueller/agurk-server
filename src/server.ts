@@ -14,7 +14,7 @@ import SocketCloseCode from './communication/socketCloseCode';
 
 const SIGN_SECRET: string = config.get('security.jwtSignSecret');
 
-export default function (): http.Server {
+export default function create(): http.Server {
   const app = express();
   const httpServer = http.createServer(app);
   const wsServer = new WebSocket.Server({ server: httpServer });

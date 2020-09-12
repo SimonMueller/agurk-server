@@ -123,7 +123,7 @@ function finishRound(
   };
 }
 
-export default async function (
+export default async function play(
   players: Player[],
   previousRounds: Round[],
   roomApi: RoomApi,
