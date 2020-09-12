@@ -1,4 +1,4 @@
-import { Schema } from '@hapi/joi';
+import { Schema } from 'joi';
 import { MessageName } from 'agurk-shared';
 
 export interface MessageValidationError {

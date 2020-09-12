@@ -1,5 +1,5 @@
 import config from 'config';
-import Joi, { any } from '@hapi/joi';
+import Joi, { any } from 'joi';
 import { createSuitCard, MessageName, Suits } from 'agurk-shared';
 import { timeout } from 'rxjs/operators';
 import WebSocket from 'ws';

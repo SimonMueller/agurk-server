@@ -1,4 +1,4 @@
-import { any, object, string } from '@hapi/joi';
+import { any, object, string } from 'joi';
 import {
   fromEventPattern, Observable, pipe, UnaryFunction,
 } from 'rxjs';

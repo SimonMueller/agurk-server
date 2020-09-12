@@ -1,6 +1,6 @@
 import WebSocket from 'ws';
 import { MessageName } from 'agurk-shared';
-import { string } from '@hapi/joi';
+import { string } from 'joi';
 import config from 'config';
 import { request } from './clientCommunication';
 import { ExpectedMessage } from '../types/messageType';

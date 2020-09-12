@@ -2,7 +2,7 @@ import config from 'config';
 import WebSocket from 'ws';
 import {
   any, array, number, object, string,
-} from '@hapi/joi';
+} from 'joi';
 import {
   Card, JOKER_CARD_KIND, SUIT_CARD_KIND, Colors, MessageName, Suits,
 } from 'agurk-shared';
