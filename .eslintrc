@@ -6,6 +6,8 @@
   ],
   "parser": "@typescript-eslint/parser",
   "rules": {
+    "no-shadow": "off",
+    "@typescript-eslint/no-shadow": ["error"],
     "max-len": [2, { "code":  120}],
     "arrow-parens": [2, "as-needed", { "requireForBlockBody": true }],
     "func-style": [2, "declaration", { "allowArrowFunctions": true }],
