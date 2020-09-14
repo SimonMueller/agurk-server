@@ -44,9 +44,13 @@ function createInvalidTurnWithNoCardsPlayed(playerId: string): InvalidTurn {
   };
 }
 
+function filterTurnCardsFromHand(hand: Card[], turn: ValidatedTurn) {
+  return hand.filter(cardInHand => !turn.cards.find(turnCard => cardEquals(turnCard, cardInHand)));
+}
+
 function getPlayerHandAfterTurn(hand: Hand, turn: ValidatedTurn): Hand {
   return turn.valid
-    ? hand.filter(cardInHand => !turn.cards.find(turnCard => cardEquals(turnCard, cardInHand)))
+    ? filterTurnCardsFromHand(hand, turn)
     : hand;
 }
 
