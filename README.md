@@ -25,6 +25,7 @@ Configuration can be found in the `config/` directory. The names of the files co
 Production config can be set via environment variables specified in `custom-environment-variables.json`.
 If `NODE_ENV ` is not set, a default value of `development` is used.
 
+
 # Rules
 
 1. The game is played with Bridge playing cards (52 Cards) & 3 Jokers => 55 Cards in total.
