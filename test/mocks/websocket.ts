@@ -2,7 +2,7 @@ import EventEmitter from 'events';
 import WebSocket from 'ws';
 
 export default (
-  readyState = WebSocket.OPEN,
+  readyState: number = WebSocket.OPEN,
   callbackError?: Error,
 ): WebSocket => Object.create(new EventEmitter(), {
   send: {

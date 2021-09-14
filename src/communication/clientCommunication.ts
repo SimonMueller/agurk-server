@@ -12,20 +12,23 @@ import { ExpectedMessage, MessageToBeValidated, MessageValidationError } from '.
 import { Result, SuccessResult } from '../types/result';
 import { ERROR_RESULT_KIND, SUCCESS_RESULT_KIND } from '../game/common';
 
+export type WebSocketMessage = [raw: string, isBinary: boolean];
+
 function wrapMessageForLogging(message: unknown | string): { payload: unknown } {
   return { payload: message };
 }
 
-function parseJsonMessage(message: string): Result<MessageValidationError, Record<string, unknown>> {
+function parseJsonMessage([rawMessage]: WebSocketMessage): Result<MessageValidationError, Record<string, unknown>> {
+  const textMessage = rawMessage.toString();
   try {
-    const parsedObject = JSON.parse(message);
+    const parsedObject = JSON.parse(textMessage);
     return {
       kind: SUCCESS_RESULT_KIND,
       data: parsedObject,
     };
   } catch (error) {
     const errorMessage = 'received message is not in proper JSON format';
-    logger.error(errorMessage, wrapMessageForLogging(message));
+    logger.error(errorMessage, wrapMessageForLogging(textMessage));
     return {
       kind: ERROR_RESULT_KIND,
       error: {
@@ -74,7 +77,8 @@ function ofSuccessResult<E, T>(result: Result<E, T>): result is SuccessResult<T>
   return result.kind === SUCCESS_RESULT_KIND;
 }
 
-function filterMessagesInInvalidFormatOrJson(): UnaryFunction<Observable<string>, Observable<MessageToBeValidated>> {
+function filterMessagesInInvalidFormatOrJson()
+  : UnaryFunction<Observable<WebSocketMessage>, Observable<MessageToBeValidated>> {
   return pipe(
     map(parseJsonMessage),
     filter(ofSuccessResult),
@@ -119,7 +123,7 @@ export function on<T>(
 ): Observable<T> {
   const addHandler = (handler: (message: string) => void): WebSocket => socket.addListener('message', handler);
   const removeHandler = (handler: (message: string) => void): WebSocket => socket.removeListener('message', handler);
-  return fromEventPattern<string>(addHandler, removeHandler)
+  return fromEventPattern<[string, boolean]>(addHandler, removeHandler)
     .pipe(
       filterMessagesInInvalidFormatOrJson(),
       filter(actualMessage => actualMessage.name === expectedMessage.name),
@@ -168,12 +172,12 @@ export async function request<T>(
 
   const socketClose = onSocketClose(socket, timeoutInMilliseconds)
     .then(() => Promise.reject(Error('socket connection closed while requesting cards')));
-  const addMessageHandler = (handler: (message: string) => void): WebSocket => socket
+  const addMessageHandler = (handler: (message: string, isBinary: boolean) => void): WebSocket => socket
     .addListener('message', handler);
-  const removeMessageHandler = (handler: (message: string) => void): WebSocket => socket
+  const removeMessageHandler = (handler: (message: string, isBinary: boolean) => void): WebSocket => socket
     .removeListener('message', handler);
   const requestResult = send(socket, requesterMessage)
-    .then(() => fromEventPattern<string>(addMessageHandler, removeMessageHandler)
+    .then(() => fromEventPattern<WebSocketMessage>(addMessageHandler, removeMessageHandler)
       .pipe(
         filterMessagesInInvalidFormatOrJson(),
         filter(actualMessage => actualMessage.name === expectedMessage.name),
