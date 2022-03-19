@@ -16,7 +16,7 @@
   "license": "MIT",
   "engines": {
     "node": "16.x",
-    "npm": "8.5.x"
+    "npm": "8.x"
   },
   "devDependencies": {
     "@types/config": "^0.0.34",
