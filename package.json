@@ -54,7 +54,7 @@
     "emojis-list": "^3.0.0",
     "express": "^4.17.2",
     "helmet": "^5.0.2",
-    "joi": "^17.5.0",
+    "joi": "^17.6.0",
     "jsonwebtoken": "^8.5.1",
     "lodash.sample": "^4.2.1",
     "lodash.shuffle": "^4.2.0",
